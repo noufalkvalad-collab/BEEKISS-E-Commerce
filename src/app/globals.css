@@ -1,0 +1,44 @@
+@import "tailwindcss";
+@plugin "tailwindcss-animate";
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  --background: #fdfdf9;
+  --foreground: #0F2E1D;
+
+  --color-forest-green: #0F2E1D;
+  --color-honey-gold: #D4A017;
+  --color-honey-light: #F9E4B7;
+
+  --font-playfair: var(--font-playfair);
+  --font-poppins: var(--font-poppins);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-poppins);
+  --font-serif: var(--font-playfair);
+
+  --color-primary: var(--color-honey-gold);
+  --color-primary-foreground: var(--color-forest-green);
+  --color-secondary: var(--color-forest-green);
+  --color-secondary-foreground: #ffffff;
+  --color-accent: var(--color-honey-light);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-poppins), sans-serif;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-playfair), serif;
+}

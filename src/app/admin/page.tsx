@@ -1,92 +1,55 @@
-"use client";
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { redirect } from "next/navigation";
+import LogoutButton from "./LogoutButton";
 
-import { TrendingUp, Package, IndianRupee, Clock, ChevronRight } from "lucide-react";
-import Link from "next/link";
+export default async function AdminDashboard() {
+    const session = await getServerSession(authOptions);
 
-// Mock Data
-const stats = [
-    { label: "Total Revenue", value: "₹1,24,500", icon: IndianRupee, trend: "+12.5%" },
-    { label: "Total Orders", value: "342", icon: Package, trend: "+5.2%" },
-    { label: "Pending Orders", value: "18", icon: Clock, trend: "-2.1%" },
-    { label: "Conversion Rate", value: "3.2%", icon: TrendingUp, trend: "+0.8%" },
-];
+    if (!session) {
+        redirect("/login");
+    }
 
-const recentOrders = [
-    { id: "ORD-9012", customer: "Rahul Sharma", date: "Today, 10:23 AM", amount: 2598, status: "Processing" },
-    { id: "ORD-9011", customer: "Priya Patel", date: "Today, 09:15 AM", amount: 1299, status: "Pending" },
-    { id: "ORD-9010", customer: "Amit Kumar", date: "Yesterday, 04:45 PM", amount: 3897, status: "Shipped" },
-    { id: "ORD-9009", customer: "Sneha Reddy", date: "Yesterday, 02:30 PM", amount: 1299, status: "Delivered" },
-];
+    if (session.user?.email !== process.env.ADMIN_EMAIL) {
+        redirect("/");
+    }
 
-export default function AdminDashboard() {
     return (
-        <div className="space-y-8">
-            <div>
-                <h1 className="text-3xl font-serif font-bold text-gray-900">Dashboard Overview</h1>
-                <p className="text-gray-500 mt-2">Welcome back. Here's what's happening with your store today.</p>
-            </div>
+        <main className="min-h-screen bg-[#0F2E1D] flex items-center justify-center p-6 relative overflow-hidden mt-[-80px]">
+            {/* Background Decorative Elements */}
+            <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[150%] rounded-full bg-gradient-to-r from-transparent to-white/5 blur-3xl transform rotate-12 pointer-events-none"></div>
+            <div className="absolute bottom-[-20%] right-[-10%] w-[40%] h-[100%] rounded-full bg-gradient-to-l from-transparent to-[#D4A017]/10 blur-3xl transform -rotate-12 pointer-events-none"></div>
 
-            {/* Stats Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                {stats.map((stat, index) => (
-                    <div key={index} className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm flex flex-col">
-                        <div className="flex justify-between items-start mb-4">
-                            <div className="p-3 bg-honey-gold/10 text-honey-gold rounded-lg">
-                                <stat.icon className="w-6 h-6" />
-                            </div>
-                            <span className={`text-sm font-medium ${stat.trend.startsWith('+') ? 'text-green-600' : 'text-red-500'}`}>
-                                {stat.trend}
-                            </span>
-                        </div>
-                        <h3 className="text-gray-500 text-sm font-medium mb-1">{stat.label}</h3>
-                        <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
-                    </div>
-                ))}
-            </div>
-
-            {/* Recent Orders Table */}
-            <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden mt-8">
-                <div className="p-6 border-b border-gray-100 flex justify-between items-center">
-                    <h2 className="text-xl font-serif font-bold text-gray-900">Recent Orders</h2>
-                    <Link href="/admin/orders" className="text-sm font-medium text-honey-gold hover:text-forest-green flex items-center transition-colors">
-                        View All <ChevronRight className="w-4 h-4 ml-1" />
-                    </Link>
+            <div className="bg-white p-10 md:p-14 rounded-3xl shadow-[0_20px_60px_-15px_rgba(0,0,0,0.5)] max-w-md w-full text-center relative z-10 animate-[fadeInUp_0.8s_ease-out_forwards]">
+                {/* Brand Logo Mini */}
+                <div className="w-16 h-16 mx-auto relative mb-6">
+                    <div className="absolute inset-0 bg-[#D4A017] rotate-45 rounded-sm shadow-md" />
+                    <div className="absolute inset-0 flex items-center justify-center text-[#0F2E1D] font-bold font-serif text-2xl z-10">B</div>
                 </div>
-                <div className="overflow-x-auto">
-                    <table className="w-full text-left border-collapse">
-                        <thead>
-                            <tr className="bg-gray-50/50 text-gray-500 text-sm">
-                                <th className="p-4 font-medium border-b border-gray-100">Order ID</th>
-                                <th className="p-4 font-medium border-b border-gray-100">Customer</th>
-                                <th className="p-4 font-medium border-b border-gray-100">Date</th>
-                                <th className="p-4 font-medium border-b border-gray-100">Amount</th>
-                                <th className="p-4 font-medium border-b border-gray-100">Status</th>
-                            </tr>
-                        </thead>
-                        <tbody className="text-sm">
-                            {recentOrders.map((order, i) => (
-                                <tr key={order.id} className="hover:bg-gray-50/50 transition-colors border-b border-gray-50 last:border-0">
-                                    <td className="p-4 font-medium text-forest-green">{order.id}</td>
-                                    <td className="p-4 text-gray-700">{order.customer}</td>
-                                    <td className="p-4 text-gray-500">{order.date}</td>
-                                    <td className="p-4 font-medium text-gray-900">₹{order.amount.toLocaleString('en-IN')}</td>
-                                    <td className="p-4">
-                                        <span className={`px-3 py-1 rounded-full text-xs font-medium inline-block
-                      ${order.status === 'Delivered' ? 'bg-green-100 text-green-700' : ''}
-                      ${order.status === 'Processing' ? 'bg-blue-100 text-blue-700' : ''}
-                      ${order.status === 'Shipped' ? 'bg-purple-100 text-purple-700' : ''}
-                      ${order.status === 'Pending' ? 'bg-yellow-100 text-yellow-700' : ''}
-                    `}>
-                                            {order.status}
-                                        </span>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
+
+                <h1 className="text-3xl font-serif font-bold text-[#0F2E1D] mb-2 tracking-wide">
+                    Admin Dashboard
+                </h1>
+
+                <p className="text-gray-500 mb-8 font-sans text-sm">
+                    Secure management portal
+                </p>
+
+                <div className="bg-[#FDFDF9] border border-[#0F2E1D]/5 rounded-2xl p-5 mb-8 text-left shadow-inner">
+                    <p className="text-xs text-gray-400 font-sans tracking-widest uppercase mb-1">Logged in as admin</p>
+                    <p className="text-[#0F2E1D] font-bold font-sans truncate text-lg">{session.user?.email}</p>
                 </div>
+
+                <LogoutButton />
             </div>
 
-        </div>
+            <style dangerouslySetInnerHTML={{
+                __html: `
+        @keyframes fadeInUp {
+          from { opacity: 0; transform: translateY(30px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+      `}} />
+        </main>
     );
 }

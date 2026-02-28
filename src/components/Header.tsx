@@ -1,14 +1,17 @@
 "use client";
 
 import Link from "next/link";
-import { ShoppingBag, Search, Menu, X } from "lucide-react";
+import { ShoppingBag, Search, Menu, X, User } from "lucide-react";
 import { useCartStore } from "@/lib/store/useCartStore";
 import { useEffect, useState } from "react";
+import { useSession } from "next-auth/react";
+import Image from "next/image";
 
 export default function Header() {
     const totalItems = useCartStore((state) => state.totalItems());
     const [mounted, setMounted] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const { data: session, status } = useSession();
 
     useEffect(() => {
         setMounted(true);
@@ -56,6 +59,21 @@ export default function Header() {
                     <button className="text-[#D4A017] hover:text-white transition-colors hidden sm:block" suppressHydrationWarning>
                         <Search className="w-5 h-5" />
                     </button>
+
+                    <Link href="/login" className="text-[#D4A017] hover:text-white transition-colors flex items-center" suppressHydrationWarning>
+                        {status === 'authenticated' && session?.user?.image ? (
+                            <Image
+                                src={session.user.image}
+                                alt="Profile"
+                                width={24}
+                                height={24}
+                                className="rounded-full border border-[#D4A017]"
+                            />
+                        ) : (
+                            <User className="w-6 h-6" />
+                        )}
+                    </Link>
+
                     <Link href="/cart" className="text-[#D4A017] hover:text-white transition-colors relative flex items-center" suppressHydrationWarning>
                         <ShoppingBag className="w-6 h-6" />
                         {mounted && totalItems > 0 && (

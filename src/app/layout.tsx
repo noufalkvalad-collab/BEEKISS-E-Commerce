@@ -1,11 +1,8 @@
-"use client";
-
+import type { Metadata } from "next";
 import { Playfair_Display, Poppins } from "next/font/google";
-import { usePathname } from "next/navigation";
 import "./globals.css";
-import Header from "@/components/Header";
-import Footer from "@/components/Footer";
 import AuthProvider from "@/components/providers/AuthProvider";
+import LayoutWrapper from "@/components/LayoutWrapper";
 
 const playfair = Playfair_Display({
   variable: "--font-playfair",
@@ -18,30 +15,26 @@ const poppins = Poppins({
   weight: ["300", "400", "500", "600", "700"],
 });
 
+export const metadata: Metadata = {
+  title: "Bee Kiss | Premium Pure Honey",
+  description: "Experience the luxury of nature with Bee Kiss. 100% natural, premium honey harvested with care.",
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const pathname = usePathname();
-  const isAdminRoute = pathname?.startsWith("/admin");
-
   return (
     <html lang="en">
-      <head>
-        <title>Bee Kiss | Premium Pure Honey</title>
-        <meta name="description" content="Experience the luxury of nature with Bee Kiss. 100% natural, premium honey harvested with care." />
-      </head>
       <body
         suppressHydrationWarning
         className={`${playfair.variable} ${poppins.variable} font-poppins antialiased bg-background text-foreground flex flex-col min-h-screen`}
       >
         <AuthProvider>
-          {!isAdminRoute && <Header />}
-          <main className={`flex-1 ${!isAdminRoute ? 'mt-20' : ''}`}>
+          <LayoutWrapper>
             {children}
-          </main>
-          {!isAdminRoute && <Footer />}
+          </LayoutWrapper>
         </AuthProvider>
       </body>
     </html>

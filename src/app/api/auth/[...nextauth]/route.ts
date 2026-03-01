@@ -8,25 +8,6 @@ export const authOptions: NextAuthOptions = {
             clientId: process.env.GOOGLE_CLIENT_ID as string,
             clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
         }),
-        CredentialsProvider({
-            name: "Admin Login",
-            credentials: {
-                email: { label: "Email", type: "email" },
-                password: { label: "Password", type: "password" }
-            },
-            async authorize(credentials) {
-                if (!credentials?.email || !credentials?.password) return null;
-
-                const adminEmail = process.env.ADMIN_EMAIL;
-                const adminPassword = process.env.ADMIN_PASSWORD;
-
-                if (adminEmail && adminPassword && credentials.email === adminEmail && credentials.password === adminPassword) {
-                    return { id: "admin-1", name: "Admin", email: adminEmail };
-                }
-
-                return null;
-            }
-        })
     ],
     pages: {
         signIn: '/login',

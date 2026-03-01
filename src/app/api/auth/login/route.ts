@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/db/mongodb';
 import User from '@/lib/models/User';
-import { signToken } from '@/lib/auth/jwt';
+import { signAccessToken, signRefreshToken } from '@/lib/auth/jwt';
 
 export async function POST(req: Request) {
     try {
@@ -37,10 +37,10 @@ export async function POST(req: Request) {
             );
         }
 
-        // Generate token
-        const token = signToken({ id: user._id.toString(), role: user.role });
+        // Generate tokens
+        const accessToken = signAccessToken({ id: user._id.toString(), role: user.role });
+        const refreshToken = signRefreshToken({ id: user._id.toString(), role: user.role });
 
-        // Set token in HTTP-only cookie
         const response = NextResponse.json(
             {
                 message: 'Login successful',
@@ -54,14 +54,22 @@ export async function POST(req: Request) {
             { status: 200 }
         );
 
-        response.cookies.set({
-            name: 'token',
-            value: token,
+        const isProduction = process.env.NODE_ENV === 'production';
+        const cookieOptions = {
             httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'lax',
-            maxAge: 7 * 24 * 60 * 60, // 7 days
+            secure: isProduction,
+            sameSite: 'lax' as const,
             path: '/',
+        };
+
+        response.cookies.set('access_token', accessToken, {
+            ...cookieOptions,
+            maxAge: 15 * 60, // 15 minutes
+        });
+
+        response.cookies.set('refresh_token', refreshToken, {
+            ...cookieOptions,
+            maxAge: 7 * 24 * 60 * 60, // 7 days
         });
 
         return response;

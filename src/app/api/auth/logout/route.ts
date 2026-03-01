@@ -7,14 +7,15 @@ export async function POST() {
             { status: 200 }
         );
 
-        // Clear the token cookie
-        response.cookies.set({
-            name: 'token',
-            value: '',
+        // Clear the token cookies
+        const oldCookieTemplate = {
             httpOnly: true,
             expires: new Date(0), // Expire immediately
             path: '/',
-        });
+        };
+
+        response.cookies.set('access_token', '', oldCookieTemplate);
+        response.cookies.set('refresh_token', '', oldCookieTemplate);
 
         return response;
 

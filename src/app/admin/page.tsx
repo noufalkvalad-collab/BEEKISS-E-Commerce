@@ -1,17 +1,20 @@
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { redirect } from "next/navigation";
+import { cookies } from "next/headers";
+import { verifyAdminToken } from "@/lib/auth/adminJwt";
 import LogoutButton from "./LogoutButton";
 
 export default async function AdminDashboard() {
-    const session = await getServerSession(authOptions);
+    const cookieStore = await cookies();
+    const accessToken = cookieStore.get("admin_access_token")?.value;
 
-    if (!session) {
-        redirect("/login");
+    if (!accessToken) {
+        redirect("/admin/login");
     }
 
-    if (session.user?.email !== process.env.ADMIN_EMAIL) {
-        redirect("/");
+    const payload = await verifyAdminToken(accessToken);
+
+    if (!payload || payload.role !== "admin") {
+        redirect("/admin/login");
     }
 
     return (
@@ -37,7 +40,7 @@ export default async function AdminDashboard() {
 
                 <div className="bg-[#FDFDF9] border border-[#0F2E1D]/5 rounded-2xl p-5 mb-8 text-left shadow-inner">
                     <p className="text-xs text-gray-400 font-sans tracking-widest uppercase mb-1">Logged in as admin</p>
-                    <p className="text-[#0F2E1D] font-bold font-sans truncate text-lg">{session.user?.email}</p>
+                    <p className="text-[#0F2E1D] font-bold font-sans truncate text-lg">{payload.email}</p>
                 </div>
 
                 <LogoutButton />

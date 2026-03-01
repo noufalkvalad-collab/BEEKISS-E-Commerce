@@ -133,7 +133,7 @@ export default function Home() {
                   <p className="text-[#D4A017] mb-6 font-medium text-lg">₹1,299</p>
                 </div>
                 <div>
-                  <button className="w-full py-3 bg-[#D4A017] text-[#0F2E1D] font-semibold rounded-full hover:bg-white hover:text-[#D4A017] hover:border hover:border-[#D4A017] transition-all duration-300 shadow-md">
+                  <button suppressHydrationWarning className="w-full py-3 bg-[#D4A017] text-[#0F2E1D] font-semibold rounded-full hover:bg-white hover:text-[#D4A017] hover:border hover:border-[#D4A017] transition-all duration-300 shadow-md">
                     Add to Cart
                   </button>
                 </div>
@@ -156,7 +156,7 @@ export default function Home() {
                   <p className="text-[#D4A017] mb-6 font-medium text-lg">₹1,499</p>
                 </div>
                 <div>
-                  <button className="w-full py-3 bg-[#D4A017] text-[#0F2E1D] font-semibold rounded-full hover:bg-white hover:text-[#D4A017] hover:border hover:border-[#D4A017] transition-all duration-300 shadow-md">
+                  <button suppressHydrationWarning className="w-full py-3 bg-[#D4A017] text-[#0F2E1D] font-semibold rounded-full hover:bg-white hover:text-[#D4A017] hover:border hover:border-[#D4A017] transition-all duration-300 shadow-md">
                     Add to Cart
                   </button>
                 </div>
@@ -179,7 +179,7 @@ export default function Home() {
                   <p className="text-[#D4A017] mb-6 font-medium text-lg">₹1,099</p>
                 </div>
                 <div>
-                  <button className="w-full py-3 bg-[#D4A017] text-[#0F2E1D] font-semibold rounded-full hover:bg-white hover:text-[#D4A017] hover:border hover:border-[#D4A017] transition-all duration-300 shadow-md">
+                  <button suppressHydrationWarning className="w-full py-3 bg-[#D4A017] text-[#0F2E1D] font-semibold rounded-full hover:bg-white hover:text-[#D4A017] hover:border hover:border-[#D4A017] transition-all duration-300 shadow-md">
                     Add to Cart
                   </button>
                 </div>

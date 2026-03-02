@@ -2,14 +2,36 @@ import mongoose, { Document, Model, Schema } from 'mongoose';
 import bcrypt from 'bcryptjs';
 import './Product'; // Ensure Product schema is loaded for wishlist population
 
+export interface IAddress {
+    _id?: mongoose.Types.ObjectId;
+    name: string;
+    houseName: string;
+    phone: string;
+    pincode: string;
+    district: string;
+    state: string;
+    landmark?: string;
+}
+
 export interface IUser extends Document {
     name: string;
     email: string;
     password?: string;
     role: 'user' | 'admin';
     wishlist: mongoose.Types.ObjectId[];
+    addresses: IAddress[];
     comparePassword(password: string): Promise<boolean>;
 }
+
+const AddressSchema = new Schema<IAddress>({
+    name: { type: String, required: true },
+    houseName: { type: String, required: true },
+    phone: { type: String, required: true },
+    pincode: { type: String, required: true },
+    district: { type: String, required: true },
+    state: { type: String, required: true },
+    landmark: { type: String }
+});
 
 const UserSchema = new Schema<IUser>(
     {
@@ -41,7 +63,8 @@ const UserSchema = new Schema<IUser>(
         wishlist: [{
             type: mongoose.Schema.Types.ObjectId,
             ref: 'Product'
-        }]
+        }],
+        addresses: [AddressSchema]
     },
     {
         timestamps: true,

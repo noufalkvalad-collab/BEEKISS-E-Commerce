@@ -12,6 +12,16 @@ export interface IOrder extends Document {
     userEmail: string;
     items: IOrderItem[];
     totalAmount: number;
+    address: {
+        name: string;
+        houseName: string;
+        phone: string;
+        pincode: string;
+        district: string;
+        state: string;
+        landmark?: string;
+    };
+    paymentMethod: "COD" | "ONLINE";
     status: "Pending" | "Processing" | "Shipped" | "Delivered" | "Cancelled";
     createdAt: Date;
     updatedAt: Date;
@@ -37,6 +47,20 @@ const OrderSchema = new Schema<IOrder>(
             type: Number,
             required: true,
             min: 0,
+        },
+        address: {
+            name: { type: String, required: true },
+            houseName: { type: String, required: true },
+            phone: { type: String, required: true },
+            pincode: { type: String, required: true },
+            district: { type: String, required: true },
+            state: { type: String, required: true },
+            landmark: { type: String },
+        },
+        paymentMethod: {
+            type: String,
+            enum: ["COD", "ONLINE"],
+            required: true,
         },
         status: {
             type: String,

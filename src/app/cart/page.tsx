@@ -91,7 +91,7 @@ export default function CartPage() {
                                         <div className="flex items-center justify-between mt-auto">
                                             <div className="flex items-center border border-gray-300 rounded w-28 h-10">
                                                 <button
-                                                    onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                                                    onClick={() => updateQuantity(item.id, item.quantity - 1, item.size)}
                                                     className="px-3 text-gray-500 hover:text-forest-green h-full"
                                                 >
                                                     -
@@ -103,7 +103,7 @@ export default function CartPage() {
                                                     className="w-full h-full bg-transparent text-center focus:outline-none text-sm font-medium text-forest-green"
                                                 />
                                                 <button
-                                                    onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                                                    onClick={() => updateQuantity(item.id, item.quantity + 1, item.size)}
                                                     className="px-3 text-gray-500 hover:text-forest-green h-full"
                                                 >
                                                     +
@@ -111,7 +111,7 @@ export default function CartPage() {
                                             </div>
 
                                             <button
-                                                onClick={() => removeItem(item.id)}
+                                                onClick={() => removeItem(item.id, item.size)}
                                                 className="text-sm flex items-center gap-1 text-gray-400 hover:text-red-500 transition-colors"
                                             >
                                                 <Trash2 className="w-4 h-4" /> Remove

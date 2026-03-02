@@ -53,10 +53,10 @@ export async function POST(req: Request) {
             slug: body.slug,
             description: body.description,
             price: Number(body.price),
-            compareAtPrice: body.compareAtPrice ? Number(body.compareAtPrice) : undefined,
             category: body.category,
             images: body.images || [],
             badge: body.badge,
+            unitQuantity: body.unitQuantity,
             stock: Number(body.stock || 0),
             isActive: body.isActive ?? true,
         });

@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { Plus, Edit2, Trash2, Search, ArrowUpDown, Image as ImageIcon, X, Loader2 } from "lucide-react";
 import Image from "next/image";
+import { CldUploadWidget } from "next-cloudinary";
 
 export default function ProductsPage() {
     const [products, setProducts] = useState<any[]>([]);
@@ -10,16 +11,17 @@ export default function ProductsPage() {
     const [isLoading, setIsLoading] = useState(true);
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [editingId, setEditingId] = useState<string | null>(null);
 
     const [newProduct, setNewProduct] = useState({
         name: "",
         slug: "",
         description: "",
         price: "",
-        compareAtPrice: "",
         category: "",
+        unitQuantity: "",
         stock: "10",
-        imageUrl: "",
+        images: [] as string[],
         isActive: true,
     });
 
@@ -44,36 +46,72 @@ export default function ProductsPage() {
         fetchData();
     }, []);
 
-    const handleAddProduct = async (e: React.FormEvent) => {
+    const handleAddOrEditProduct = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsSubmitting(true);
         try {
             // Clean up the data for submission
             const payload = {
                 ...newProduct,
-                images: newProduct.imageUrl ? [newProduct.imageUrl] : [],
             };
 
-            const res = await fetch("/api/admin/products", {
-                method: "POST",
+            const endpoint = editingId ? `/api/admin/products/${editingId}` : "/api/admin/products";
+            const method = editingId ? "PUT" : "POST";
+
+            const res = await fetch(endpoint, {
+                method,
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(payload),
             });
             if (res.ok) {
                 setIsAddModalOpen(false);
+                setEditingId(null);
                 setNewProduct({
-                    name: "", slug: "", description: "", price: "", compareAtPrice: "", category: "", stock: "10", imageUrl: "", isActive: true
+                    name: "", slug: "", description: "", price: "", category: "", unitQuantity: "", stock: "10", images: [], isActive: true
                 });
                 fetchData(); // Refresh list
             } else {
                 const data = await res.json();
-                alert(data.error || "Failed to create product");
+                alert(data.error || `Failed to ${editingId ? 'update' : 'create'} product`);
             }
         } catch (error) {
-            console.error("Error creating product:", error);
+            console.error(`Error ${editingId ? 'updating' : 'creating'} product:`, error);
             alert("An unexpected error occurred");
         } finally {
             setIsSubmitting(false);
+        }
+    };
+
+    const handleEditClick = (prod: any) => {
+        setEditingId(prod._id);
+        setNewProduct({
+            name: prod.name,
+            slug: prod.slug,
+            description: prod.description || "",
+            price: prod.price?.toString() || "",
+            category: prod.category?._id || "",
+            unitQuantity: prod.unitQuantity || "",
+            stock: prod.stock?.toString() || "0",
+            images: prod.images || [],
+            isActive: prod.isActive,
+        });
+        setIsAddModalOpen(true);
+    };
+
+    const handleDeleteClick = async (id: string, name: string) => {
+        if (!confirm(`Are you sure you want to delete "${name}"? This action cannot be undone.`)) return;
+
+        try {
+            const res = await fetch(`/api/admin/products/${id}`, { method: "DELETE" });
+            if (res.ok) {
+                fetchData();
+            } else {
+                const data = await res.json();
+                alert(data.error || "Failed to delete product");
+            }
+        } catch (error) {
+            console.error("Error deleting product:", error);
+            alert("An unexpected error occurred while deleting.");
         }
     };
 
@@ -85,7 +123,13 @@ export default function ProductsPage() {
                     <p className="text-gray-500 mt-1 font-sans">Manage inventory, pricing, and details</p>
                 </div>
                 <button
-                    onClick={() => setIsAddModalOpen(true)}
+                    onClick={() => {
+                        setEditingId(null);
+                        setNewProduct({
+                            name: "", slug: "", description: "", price: "", category: "", unitQuantity: "", stock: "10", images: [], isActive: true
+                        });
+                        setIsAddModalOpen(true);
+                    }}
                     className="flex items-center gap-2 bg-[#0F2E1D] hover:bg-[#D4A017] text-white hover:text-[#0F2E1D] px-5 py-2.5 rounded-xl font-medium transition-all duration-300 shadow-md">
                     <Plus className="w-5 h-5" />
                     New Product
@@ -97,12 +141,14 @@ export default function ProductsPage() {
                 <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 overflow-y-auto">
                     <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl my-8 animate-[fadeInUp_0.3s_ease-out]">
                         <div className="flex justify-between items-center p-6 border-b border-gray-100 sticky top-0 bg-white z-10 rounded-t-2xl">
-                            <h2 className="text-xl font-serif font-bold text-[#0F2E1D]">Add New Product</h2>
+                            <h2 className="text-xl font-serif font-bold text-[#0F2E1D]">
+                                {editingId ? "Edit Product" : "Add New Product"}
+                            </h2>
                             <button onClick={() => setIsAddModalOpen(false)} className="text-gray-400 hover:text-gray-600 transition-colors">
                                 <X className="w-6 h-6" />
                             </button>
                         </div>
-                        <form onSubmit={handleAddProduct} className="p-6">
+                        <form onSubmit={handleAddOrEditProduct} className="p-6">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div className="space-y-4">
                                     <div>
@@ -142,31 +188,66 @@ export default function ProductsPage() {
                                     </div>
                                 </div>
                                 <div className="space-y-4">
-                                    <div className="grid grid-cols-2 gap-4">
+                                    <div className="grid gap-4">
                                         <div>
                                             <label className="block text-sm font-medium text-gray-700 mb-1">Price (₹) *</label>
                                             <input type="number" required min="0" step="0.01" value={newProduct.price}
                                                 onChange={(e) => setNewProduct({ ...newProduct, price: e.target.value })}
                                                 className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#D4A017]/50" placeholder="0.00" />
                                         </div>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4">
                                         <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-1">Compare Price (₹)</label>
-                                            <input type="number" min="0" step="0.01" value={newProduct.compareAtPrice}
-                                                onChange={(e) => setNewProduct({ ...newProduct, compareAtPrice: e.target.value })}
-                                                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#D4A017]/50" placeholder="Optional" />
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">Unit Size</label>
+                                            <input type="text" value={newProduct.unitQuantity}
+                                                onChange={(e) => setNewProduct({ ...newProduct, unitQuantity: e.target.value })}
+                                                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#D4A017]/50" placeholder="e.g. 500g" />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">Quantity in Stock *</label>
+                                            <input type="number" required min="0" value={newProduct.stock}
+                                                onChange={(e) => setNewProduct({ ...newProduct, stock: e.target.value })}
+                                                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#D4A017]/50" placeholder="10" />
                                         </div>
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">Stock Amount *</label>
-                                        <input type="number" required min="0" value={newProduct.stock}
-                                            onChange={(e) => setNewProduct({ ...newProduct, stock: e.target.value })}
-                                            className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#D4A017]/50" placeholder="10" />
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">Image URL</label>
-                                        <input type="url" value={newProduct.imageUrl}
-                                            onChange={(e) => setNewProduct({ ...newProduct, imageUrl: e.target.value })}
-                                            className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#D4A017]/50" placeholder="https://..." />
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">Product Images</label>
+                                        <div className="flex flex-wrap gap-4">
+                                            {newProduct.images.map((url, index) => (
+                                                <div key={index} className="relative w-24 h-24 rounded-lg overflow-hidden border border-gray-200 group">
+                                                    <img src={url} alt={`Product ${index + 1}`} className="w-full h-full object-cover" />
+                                                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                                        <button
+                                                            type="button"
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                setNewProduct(prev => ({ ...prev, images: prev.images.filter((_, i) => i !== index) }));
+                                                            }}
+                                                            className="bg-white text-red-600 p-1.5 rounded-full hover:bg-red-50 transition-colors"
+                                                        >
+                                                            <Trash2 className="w-4 h-4" />
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                            <CldUploadWidget
+                                                uploadPreset="beekiss" // Optional depending on cloud settings
+                                                signatureEndpoint="/api/admin/upload"
+                                                onSuccess={(result: any) => {
+                                                    setNewProduct(prev => ({ ...prev, images: [...prev.images, result.info.secure_url] }));
+                                                }}
+                                            >
+                                                {({ open }) => (
+                                                    <div
+                                                        onClick={() => open()}
+                                                        className="w-24 h-24 border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:bg-gray-50 hover:border-[#D4A017] transition-colors"
+                                                    >
+                                                        <Plus className="w-6 h-6 text-gray-400 mb-1" />
+                                                        <span className="text-[10px] text-gray-500 font-medium">Add Image</span>
+                                                    </div>
+                                                )}
+                                            </CldUploadWidget>
+                                        </div>
                                     </div>
                                     <div className="flex items-center gap-2 pt-2">
                                         <input type="checkbox" id="isProductActive" checked={newProduct.isActive}
@@ -184,7 +265,7 @@ export default function ProductsPage() {
                                 <button type="submit" disabled={isSubmitting}
                                     className="px-5 py-2.5 text-white bg-[#0F2E1D] hover:bg-[#163b22] rounded-xl font-medium transition-colors flex items-center gap-2">
                                     {isSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
-                                    Save Product
+                                    {editingId ? "Save Changes" : "Save Product"}
                                 </button>
                             </div>
                         </form>
@@ -250,7 +331,14 @@ export default function ProductsPage() {
                                             </div>
                                         </td>
                                         <td className="px-6 py-4">
-                                            <div className="font-medium text-[#0F2E1D]">{prod.name}</div>
+                                            <div className="font-medium text-[#0F2E1D]">
+                                                {prod.name}
+                                                {prod.unitQuantity && (
+                                                    <span className="ml-2 text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full border border-gray-200">
+                                                        {prod.unitQuantity}
+                                                    </span>
+                                                )}
+                                            </div>
                                             <div className="text-gray-400 text-xs mt-0.5 font-mono">{prod.slug}</div>
                                         </td>
                                         <td className="px-6 py-4 text-gray-500 text-sm">
@@ -258,9 +346,6 @@ export default function ProductsPage() {
                                         </td>
                                         <td className="px-6 py-4">
                                             <div className="font-medium text-[#0F2E1D]">₹{prod.price.toLocaleString('en-IN')}</div>
-                                            {prod.compareAtPrice && (
-                                                <div className="text-gray-400 text-xs line-through mt-0.5">₹{prod.compareAtPrice.toLocaleString('en-IN')}</div>
-                                            )}
                                         </td>
                                         <td className="px-6 py-4">
                                             <span className={`inline-flex px-2.5 py-1 rounded-full text-xs font-medium border ${prod.stock > 10
@@ -274,10 +359,10 @@ export default function ProductsPage() {
                                         </td>
                                         <td className="px-6 py-4 text-right">
                                             <div className="flex items-center justify-end gap-3 text-gray-400">
-                                                <button className="hover:text-[#D4A017] transition-colors p-1" title="Edit">
+                                                <button onClick={() => handleEditClick(prod)} className="hover:text-[#D4A017] transition-colors p-1" title="Edit">
                                                     <Edit2 className="w-4 h-4" />
                                                 </button>
-                                                <button className="hover:text-red-500 transition-colors p-1" title="Delete">
+                                                <button onClick={() => handleDeleteClick(prod._id as unknown as string, prod.name)} className="hover:text-red-500 transition-colors p-1" title="Delete">
                                                     <Trash2 className="w-4 h-4" />
                                                 </button>
                                             </div>

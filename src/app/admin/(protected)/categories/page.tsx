@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Plus, Edit2, Trash2, Search, ArrowUpDown, X, Loader2 } from "lucide-react";
+import { Plus, Edit2, Trash2, Search, ArrowUpDown, X, Loader2, Image as ImageIcon } from "lucide-react";
+import { CldUploadWidget } from "next-cloudinary";
 import type { ICategory } from "@/lib/models/Category";
 
 export default function CategoriesPage() {
@@ -9,11 +10,13 @@ export default function CategoriesPage() {
     const [isLoading, setIsLoading] = useState(true);
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [editingId, setEditingId] = useState<string | null>(null);
 
     const [newCategory, setNewCategory] = useState({
         name: "",
         slug: "",
         description: "",
+        image: "",
         isActive: true,
     });
 
@@ -31,28 +34,61 @@ export default function CategoriesPage() {
         fetchCategories();
     }, []);
 
-    const handleAddCategory = async (e: React.FormEvent) => {
+    const handleAddOrEditCategory = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsSubmitting(true);
         try {
-            const res = await fetch("/api/admin/categories", {
-                method: "POST",
+            const endpoint = editingId ? `/api/admin/categories/${editingId}` : "/api/admin/categories";
+            const method = editingId ? "PUT" : "POST";
+
+            const res = await fetch(endpoint, {
+                method,
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(newCategory),
             });
             if (res.ok) {
                 setIsAddModalOpen(false);
-                setNewCategory({ name: "", slug: "", description: "", isActive: true });
+                setEditingId(null);
+                setNewCategory({ name: "", slug: "", description: "", image: "", isActive: true });
                 fetchCategories(); // Refresh list
             } else {
                 const data = await res.json();
-                alert(data.error || "Failed to create category");
+                alert(data.error || `Failed to ${editingId ? 'update' : 'create'} category`);
             }
         } catch (error) {
-            console.error("Error creating category:", error);
+            console.error(`Error ${editingId ? 'updating' : 'creating'} category:`, error);
             alert("An unexpected error occurred");
         } finally {
             setIsSubmitting(false);
+        }
+    };
+
+    const handleEditClick = (cat: any) => {
+        setEditingId(cat._id);
+        setNewCategory({
+            name: cat.name,
+            slug: cat.slug,
+            description: cat.description || "",
+            image: cat.image || "",
+            isActive: cat.isActive,
+        });
+        setIsAddModalOpen(true);
+    };
+
+    const handleDeleteClick = async (id: string, name: string) => {
+        if (!confirm(`Are you sure you want to delete the "${name}" category? This action cannot be undone.`)) return;
+
+        try {
+            const res = await fetch(`/api/admin/categories/${id}`, { method: "DELETE" });
+            if (res.ok) {
+                fetchCategories();
+            } else {
+                const data = await res.json();
+                alert(data.error || "Failed to delete category");
+            }
+        } catch (error) {
+            console.error("Error deleting category:", error);
+            alert("An unexpected error occurred while deleting.");
         }
     };
 
@@ -64,7 +100,11 @@ export default function CategoriesPage() {
                     <p className="text-gray-500 mt-1 font-sans">Manage your product collections</p>
                 </div>
                 <button
-                    onClick={() => setIsAddModalOpen(true)}
+                    onClick={() => {
+                        setEditingId(null);
+                        setNewCategory({ name: "", slug: "", description: "", image: "", isActive: true });
+                        setIsAddModalOpen(true);
+                    }}
                     className="flex items-center gap-2 bg-[#0F2E1D] hover:bg-[#D4A017] text-white hover:text-[#0F2E1D] px-5 py-2.5 rounded-xl font-medium transition-all duration-300 shadow-md">
                     <Plus className="w-5 h-5" />
                     New Category
@@ -76,12 +116,14 @@ export default function CategoriesPage() {
                 <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
                     <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden animate-[fadeInUp_0.3s_ease-out]">
                         <div className="flex justify-between items-center p-6 border-b border-gray-100">
-                            <h2 className="text-xl font-serif font-bold text-[#0F2E1D]">Add New Category</h2>
+                            <h2 className="text-xl font-serif font-bold text-[#0F2E1D]">
+                                {editingId ? "Edit Category" : "Add New Category"}
+                            </h2>
                             <button onClick={() => setIsAddModalOpen(false)} className="text-gray-400 hover:text-gray-600 transition-colors">
                                 <X className="w-6 h-6" />
                             </button>
                         </div>
-                        <form onSubmit={handleAddCategory} className="p-6">
+                        <form onSubmit={handleAddOrEditCategory} className="p-6">
                             <div className="space-y-4">
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">Name *</label>
@@ -121,6 +163,32 @@ export default function CategoriesPage() {
                                         placeholder="Category description..."
                                     />
                                 </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Category Image</label>
+                                    <CldUploadWidget
+                                        uploadPreset="beekiss" // Optional depending on cloud settings
+                                        signatureEndpoint="/api/admin/upload"
+                                        onSuccess={(result: any) => {
+                                            setNewCategory({ ...newCategory, image: result.info.secure_url });
+                                        }}
+                                    >
+                                        {({ open }) => (
+                                            <div
+                                                onClick={() => open()}
+                                                className="w-full h-32 border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:bg-gray-50 hover:border-[#D4A017] transition-colors overflow-hidden relative"
+                                            >
+                                                {newCategory.image ? (
+                                                    <img src={newCategory.image} alt="Upload preview" className="w-full h-full object-cover" />
+                                                ) : (
+                                                    <>
+                                                        <ImageIcon className="w-8 h-8 text-gray-400 mb-2" />
+                                                        <span className="text-sm text-gray-500 font-medium">Click to upload image</span>
+                                                    </>
+                                                )}
+                                            </div>
+                                        )}
+                                    </CldUploadWidget>
+                                </div>
                                 <div className="flex items-center gap-2">
                                     <input
                                         type="checkbox"
@@ -146,7 +214,7 @@ export default function CategoriesPage() {
                                     className="px-5 py-2.5 text-white bg-[#0F2E1D] hover:bg-[#163b22] rounded-xl font-medium transition-colors flex items-center gap-2 disabled:opacity-70"
                                 >
                                     {isSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
-                                    Save Category
+                                    {editingId ? "Save Changes" : "Save Category"}
                                 </button>
                             </div>
                         </form>
@@ -203,10 +271,10 @@ export default function CategoriesPage() {
                                         </td>
                                         <td className="px-6 py-4 text-right">
                                             <div className="flex items-center justify-end gap-3 text-gray-400">
-                                                <button className="hover:text-[#D4A017] transition-colors p-1" title="Edit">
+                                                <button onClick={() => handleEditClick(cat)} className="hover:text-[#D4A017] transition-colors p-1" title="Edit">
                                                     <Edit2 className="w-4 h-4" />
                                                 </button>
-                                                <button className="hover:text-red-500 transition-colors p-1" title="Delete">
+                                                <button onClick={() => handleDeleteClick(cat._id as unknown as string, cat.name)} className="hover:text-red-500 transition-colors p-1" title="Delete">
                                                     <Trash2 className="w-4 h-4" />
                                                 </button>
                                             </div>

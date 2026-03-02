@@ -1,8 +1,23 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, Leaf, ShieldCheck, Droplets } from "lucide-react";
+import dbConnect from "@/lib/db/mongodb";
+import Product from "@/lib/models/Product";
 
-export default function Home() {
+export default async function Home() {
+  await dbConnect();
+
+  // Fetch up to 3 featured / recently added active products
+  const dbProducts = await Product.find({ isActive: true }).sort({ createdAt: -1 }).limit(3).lean();
+
+  const featuredProducts = dbProducts.map((p: any) => ({
+    id: p._id.toString(),
+    name: p.name,
+    slug: p.slug,
+    price: p.price,
+    image: p.images && p.images.length > 0 ? p.images[0] : "/honey.jpg",
+  }));
+
   return (
     <main className="flex min-h-screen flex-col bg-[#FDFDF9] overflow-x-hidden">
       {/* Hero Section */}
@@ -116,75 +131,33 @@ export default function Home() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
-            {/* Product Card 1 */}
-            <div className="bg-white rounded-2xl shadow-lg hover:-translate-y-2 transition-transform duration-300 overflow-hidden flex flex-col group">
-              <div className="relative aspect-[4/3] w-full bg-gray-100 p-8 flex items-center justify-center border-b border-gray-100">
-                {/* Fallback pattern logic if /product-1 doesn't exist yet */}
-                <Image
-                  src="/honey.jpg"
-                  alt="Wildflower Reserve"
-                  fill
-                  className="object-cover group-hover:scale-105 transition-transform duration-500"
-                />
-              </div>
-              <div className="p-8 flex flex-col flex-1 text-center bg-white justify-between">
-                <div>
-                  <h3 className="text-2xl font-semibold mb-2 font-serif text-[#0F2E1D]">Wildflower Reserve</h3>
-                  <p className="text-[#D4A017] mb-6 font-medium text-lg">₹1,299</p>
+            {featuredProducts.length === 0 ? (
+              <p className="text-gray-400 font-light col-span-3 text-center">More exquisite products arriving soon.</p>
+            ) : (
+              featuredProducts.map((prod) => (
+                <div key={prod.id} className="bg-white rounded-2xl shadow-lg hover:-translate-y-2 transition-transform duration-300 overflow-hidden flex flex-col group">
+                  <div className="relative aspect-[4/3] w-full bg-gray-100 p-8 flex items-center justify-center border-b border-gray-100">
+                    <Image
+                      src={prod.image}
+                      alt={prod.name}
+                      fill
+                      className="object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                  </div>
+                  <div className="p-8 flex flex-col flex-1 text-center bg-white justify-between">
+                    <div>
+                      <h3 className="text-2xl font-semibold mb-2 font-serif text-[#0F2E1D]">{prod.name}</h3>
+                      <p className="text-[#D4A017] mb-6 font-medium text-lg">₹{prod.price.toLocaleString('en-IN')}</p>
+                    </div>
+                    <div>
+                      <Link href={`/products/${prod.slug}`} suppressHydrationWarning className="w-full py-3 bg-[#D4A017] text-[#0F2E1D] font-semibold rounded-full hover:bg-white hover:text-[#D4A017] hover:border hover:border-[#D4A017] transition-all duration-300 shadow-md inline-block text-center">
+                        View Details
+                      </Link>
+                    </div>
+                  </div>
                 </div>
-                <div>
-                  <button suppressHydrationWarning className="w-full py-3 bg-[#D4A017] text-[#0F2E1D] font-semibold rounded-full hover:bg-white hover:text-[#D4A017] hover:border hover:border-[#D4A017] transition-all duration-300 shadow-md">
-                    Add to Cart
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            {/* Product Card 2 */}
-            <div className="bg-white rounded-2xl shadow-lg hover:-translate-y-2 transition-transform duration-300 overflow-hidden flex flex-col group">
-              <div className="relative aspect-[4/3] w-full bg-gray-100 p-8 flex items-center justify-center border-b border-gray-100">
-                <Image
-                  src="/honeyjar.jpg"
-                  alt="Forest Honeydew"
-                  fill
-                  className="object-cover group-hover:scale-105 transition-transform duration-500"
-                />
-              </div>
-              <div className="p-8 flex flex-col flex-1 text-center bg-white justify-between">
-                <div>
-                  <h3 className="text-2xl font-semibold mb-2 font-serif text-[#0F2E1D]">Forest Honeydew</h3>
-                  <p className="text-[#D4A017] mb-6 font-medium text-lg">₹1,499</p>
-                </div>
-                <div>
-                  <button suppressHydrationWarning className="w-full py-3 bg-[#D4A017] text-[#0F2E1D] font-semibold rounded-full hover:bg-white hover:text-[#D4A017] hover:border hover:border-[#D4A017] transition-all duration-300 shadow-md">
-                    Add to Cart
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            {/* Product Card 3 */}
-            <div className="bg-white rounded-2xl shadow-lg hover:-translate-y-2 transition-transform duration-300 overflow-hidden flex flex-col group">
-              <div className="relative aspect-[4/3] w-full bg-gray-100 p-8 flex items-center justify-center border-b border-gray-100">
-                <Image
-                  src="/lemonhoney.jpeg"
-                  alt="Acacia Gold"
-                  fill
-                  className="object-cover group-hover:scale-105 transition-transform duration-500"
-                />
-              </div>
-              <div className="p-8 flex flex-col flex-1 text-center bg-white justify-between">
-                <div>
-                  <h3 className="text-2xl font-semibold mb-2 font-serif text-[#0F2E1D]">Acacia Gold</h3>
-                  <p className="text-[#D4A017] mb-6 font-medium text-lg">₹1,099</p>
-                </div>
-                <div>
-                  <button suppressHydrationWarning className="w-full py-3 bg-[#D4A017] text-[#0F2E1D] font-semibold rounded-full hover:bg-white hover:text-[#D4A017] hover:border hover:border-[#D4A017] transition-all duration-300 shadow-md">
-                    Add to Cart
-                  </button>
-                </div>
-              </div>
-            </div>
+              ))
+            )}
           </div>
 
           <div className="mt-16 text-center">

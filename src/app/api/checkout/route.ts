@@ -3,13 +3,7 @@ import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import dbConnect from "@/lib/db/mongodb";
 import Order from "@/lib/models/Order";
-import { products } from "@/lib/data/products";
-
-// A secure server-side price lookup
-function getProductPrice(productId: string | number): number {
-    const product = products.find((p: any) => String(p.id) === String(productId));
-    return product ? product.price : 0;
-}
+import Product from "@/lib/models/Product";
 
 export async function POST(request: Request) {
     try {
@@ -27,13 +21,15 @@ export async function POST(request: Request) {
         }
 
         await dbConnect();
+        const dbProducts = await Product.find({ isActive: true }).lean();
 
         // 1. Recalculate total amount securely on the server
         let calculatedTotal = 0;
         const processedItems = items.map((item: any) => {
             if (!item.id || !item.quantity) throw new Error("Malformed item data");
 
-            const serverPrice = getProductPrice(item.id);
+            const product = dbProducts.find((p: any) => p._id.toString() === String(item.id));
+            const serverPrice = product ? product.price : 0;
             if (serverPrice === 0) throw new Error(`Product not found: ${item.id}`);
 
             const itemTotal = serverPrice * item.quantity;

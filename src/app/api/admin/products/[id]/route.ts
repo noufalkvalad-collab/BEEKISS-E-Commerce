@@ -4,6 +4,7 @@ import Product from "@/lib/models/Product";
 import Category from "@/lib/models/Category";
 import { verifyAdminToken } from "@/lib/auth/adminJwt";
 import { cookies } from "next/headers";
+import { revalidatePath } from "next/cache";
 
 async function getAdminPayload() {
     const cookieStore = await cookies();
@@ -51,6 +52,11 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
             return NextResponse.json({ error: "Product not found" }, { status: 404 });
         }
 
+        // Revalidate the entire storefront to reflect changes immediately
+        revalidatePath("/");
+        revalidatePath("/products");
+        revalidatePath(`/products/${updatedProduct.slug}`);
+
         return NextResponse.json(updatedProduct);
     } catch (error: any) {
         if (error.code === 11000) {
@@ -73,6 +79,10 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
         if (!deletedProduct) {
             return NextResponse.json({ error: "Product not found" }, { status: 404 });
         }
+
+        // Revalidate frontend
+        revalidatePath("/");
+        revalidatePath("/products");
 
         return NextResponse.json({ message: "Product deleted successfully" });
     } catch (error) {

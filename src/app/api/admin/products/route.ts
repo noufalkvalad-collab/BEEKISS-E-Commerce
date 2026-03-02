@@ -4,6 +4,7 @@ import Product from "@/lib/models/Product";
 import Category from "@/lib/models/Category";
 import { verifyAdminToken } from "@/lib/auth/adminJwt";
 import { cookies } from "next/headers";
+import { revalidatePath } from "next/cache";
 
 async function getAdminPayload() {
     const cookieStore = await cookies();
@@ -63,6 +64,9 @@ export async function POST(req: Request) {
 
         // Populate category before returning to match GET signature nicely
         await newProduct.populate("category", "name slug");
+
+        revalidatePath("/");
+        revalidatePath("/products");
 
         return NextResponse.json(newProduct, { status: 201 });
     } catch (error: any) {

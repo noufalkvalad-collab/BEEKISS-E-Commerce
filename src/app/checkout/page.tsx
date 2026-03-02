@@ -19,9 +19,43 @@ export default function CheckoutPage() {
     const [success, setSuccess] = useState(false);
     const [orderId, setOrderId] = useState("");
 
+    // Address State
+    const [savedAddresses, setSavedAddresses] = useState<any[]>([]);
+    const [selectedAddressIndex, setSelectedAddressIndex] = useState<number | null>(null);
+    const [isLoadingAddresses, setIsLoadingAddresses] = useState(true);
+
+    // Payment State
+    const [paymentMethod, setPaymentMethod] = useState("COD");
+
     useEffect(() => {
         setMounted(true);
-    }, []);
+        if (status === "authenticated") {
+            fetchAddresses();
+        }
+    }, [status]);
+
+    const fetchAddresses = async () => {
+        try {
+            const res = await fetch("/api/user/addresses", {
+                cache: 'no-store',
+                headers: {
+                    'Pragma': 'no-cache',
+                    'Cache-Control': 'no-cache'
+                }
+            });
+            const data = await res.json();
+            if (data.success) {
+                setSavedAddresses(data.addresses);
+                if (data.addresses.length > 0) {
+                    setSelectedAddressIndex(0);
+                }
+            }
+        } catch (error) {
+            console.error("Failed to fetch addresses:", error);
+        } finally {
+            setIsLoadingAddresses(false);
+        }
+    };
 
     // Redirect to login if unauthenticated
     useEffect(() => {
@@ -59,11 +93,24 @@ export default function CheckoutPage() {
         setIsProcessing(true);
         setError("");
 
+        // Basic Validation
+        if (selectedAddressIndex === null || !savedAddresses[selectedAddressIndex]) {
+            setError("Please select a delivery address.");
+            setIsProcessing(false);
+            return;
+        }
+
+        const selectedAddress = savedAddresses[selectedAddressIndex];
+
         try {
             const response = await fetch("/api/checkout", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ items }),
+                body: JSON.stringify({
+                    items,
+                    address: selectedAddress,
+                    paymentMethod
+                }),
             });
 
             const data = await response.json();
@@ -131,31 +178,104 @@ export default function CheckoutPage() {
                 <div className="grid grid-cols-1 md:grid-cols-12 gap-12">
                     {/* Left Column: Order Summary Info */}
                     <div className="md:col-span-7 space-y-8">
+                        {/* Delivery Address Selector */}
                         <div className="bg-white p-8 rounded-3xl shadow-sm border border-[#0F2E1D]/5">
-                            <h2 className="text-2xl font-serif font-bold text-[#0F2E1D] mb-6">Contact Information</h2>
-                            <div className="flex items-center gap-4">
-                                {session?.user?.image && (
-                                    <Image src={session.user.image} alt="User" width={48} height={48} className="rounded-full" />
-                                )}
-                                <div>
-                                    <p className="font-bold text-[#0F2E1D]">{session?.user?.name}</p>
-                                    <p className="text-sm text-gray-500">{session?.user?.email}</p>
-                                </div>
+                            <div className="flex justify-between items-center mb-6">
+                                <h2 className="text-2xl font-serif font-bold text-[#0F2E1D]">Delivery Address</h2>
+                                <Link href="/user/addresses/new?callbackUrl=/checkout" className="text-sm font-bold text-[#D4A017] hover:underline">
+                                    + Add New Address
+                                </Link>
                             </div>
+
+                            {isLoadingAddresses ? (
+                                <div className="flex justify-center py-8">
+                                    <Loader2 className="w-8 h-8 animate-spin text-[#D4A017]" />
+                                </div>
+                            ) : savedAddresses.length === 0 ? (
+                                <div className="text-center py-8 bg-gray-50 rounded-xl border border-dashed border-gray-300">
+                                    <p className="text-gray-500 mb-4 font-sans text-sm">You have no saved delivery addresses.</p>
+                                    <Link href="/user/addresses/new?callbackUrl=/checkout" className="inline-block bg-[#0F2E1D] text-[#D4A017] font-bold py-3 px-6 rounded-xl hover:bg-[#163b22] transition-colors font-sans text-sm">
+                                        Add Delivery Address
+                                    </Link>
+                                </div>
+                            ) : (
+                                <div className="space-y-4 max-h-[500px] overflow-y-auto custom-scrollbar pr-2">
+                                    {savedAddresses.map((addr, index) => (
+                                        <label key={index} className={`flex items-start gap-4 p-5 border rounded-xl cursor-pointer transition-all ${selectedAddressIndex === index ? 'border-[#D4A017] bg-[#D4A017]/5 shadow-sm' : 'border-gray-200 hover:border-gray-300'}`}>
+                                            <div className="flex bg-white items-center justify-center w-6 h-6 rounded-full border border-gray-300 mt-1 shrink-0">
+                                                {selectedAddressIndex === index && <div className="w-3 h-3 bg-[#D4A017] rounded-full" />}
+                                            </div>
+                                            <div className="flex-1">
+                                                <div className="flex justify-between items-start">
+                                                    <p className="font-bold text-[#0F2E1D] text-lg">{addr.name}</p>
+                                                </div>
+                                                <p className="text-sm text-gray-600 mt-2 font-sans leading-relaxed">
+                                                    {addr.houseName}, {addr.landmark ? `${addr.landmark}, ` : ''} <br />
+                                                    {addr.district}, {addr.state} - {addr.pincode}
+                                                </p>
+                                                <p className="text-sm text-[#0F2E1D] mt-3 font-semibold font-mono">Mobile: {addr.phone}</p>
+                                                <input
+                                                    type="radio"
+                                                    name="selectedAddress"
+                                                    className="hidden"
+                                                    checked={selectedAddressIndex === index}
+                                                    onChange={() => setSelectedAddressIndex(index)}
+                                                />
+                                            </div>
+                                        </label>
+                                    ))}
+                                </div>
+                            )}
                         </div>
 
-                        <div className="bg-white p-8 rounded-3xl shadow-sm border border-[#0F2E1D]/5 opacity-50 cursor-not-allowed">
-                            <h2 className="text-2xl font-serif font-bold text-[#0F2E1D] mb-2 flex justify-between items-center">
-                                Payment Method
-                                <span className="text-xs bg-gray-100 text-gray-500 px-3 py-1 rounded-full uppercase font-sans tracking-widest">Coming Soon</span>
-                            </h2>
-                            <p className="text-sm text-gray-500 mb-6">Online payments are currently disabled. This order will be processed securely using your internal account balance.</p>
+                        {/* Payment Method */}
+                        <div className="bg-white p-8 rounded-3xl shadow-sm border border-[#0F2E1D]/5">
+                            <h2 className="text-2xl font-serif font-bold text-[#0F2E1D] mb-6">Payment Method</h2>
 
-                            <div className="border-2 border-[#D4A017] rounded-xl p-4 bg-[#D4A017]/5">
-                                <p className="font-bold text-[#0F2E1D] flex items-center gap-2">
-                                    <span className="w-3 h-3 rounded-full bg-[#D4A017] inline-block"></span>
-                                    Internal Billing
-                                </p>
+                            <div className="space-y-4">
+                                {/* Cash on Delivery */}
+                                <label className={`flex items-start gap-4 p-4 border rounded-xl cursor-pointer transition-all ${paymentMethod === 'COD' ? 'border-[#D4A017] bg-[#D4A017]/5' : 'border-gray-200 hover:border-gray-300'}`}>
+                                    <div className="flex bg-white items-center justify-center w-6 h-6 rounded-full border border-gray-300 mt-0.5 shrink-0">
+                                        {paymentMethod === 'COD' && <div className="w-3 h-3 bg-[#D4A017] rounded-full" />}
+                                    </div>
+                                    <div className="flex-1">
+                                        <p className="font-bold text-[#0F2E1D] mb-1">Cash on Delivery (COD)</p>
+                                        <p className="text-sm text-gray-500">Pay with cash upon delivery.</p>
+                                        <input
+                                            type="radio"
+                                            name="paymentMethod"
+                                            value="COD"
+                                            className="hidden"
+                                            checked={paymentMethod === 'COD'}
+                                            onChange={(e) => setPaymentMethod(e.target.value)}
+                                        />
+                                    </div>
+                                </label>
+
+                                {/* Online Payment */}
+                                <label className={`flex items-start gap-4 p-4 border rounded-xl cursor-pointer transition-all ${paymentMethod === 'ONLINE' ? 'border-[#D4A017] bg-[#D4A017]/5' : 'border-gray-200 hover:border-gray-300'}`}>
+                                    <div className="flex bg-white items-center justify-center w-6 h-6 rounded-full border border-gray-300 mt-0.5 shrink-0">
+                                        {paymentMethod === 'ONLINE' && <div className="w-3 h-3 bg-[#D4A017] rounded-full" />}
+                                    </div>
+                                    <div className="flex-1">
+                                        <div className="flex justify-between items-center mb-1">
+                                            <p className="font-bold text-[#0F2E1D]">Online Payment</p>
+                                            <div className="flex gap-2">
+                                                <span className="w-8 h-5 bg-gray-200 rounded text-[8px] flex items-center justify-center font-bold text-gray-600">UPI</span>
+                                                <span className="w-8 h-5 bg-gray-200 rounded text-[8px] flex items-center justify-center font-bold text-gray-600">CARD</span>
+                                            </div>
+                                        </div>
+                                        <p className="text-sm text-gray-500">Pay securely via Razorpay/Stripe.</p>
+                                        <input
+                                            type="radio"
+                                            name="paymentMethod"
+                                            value="ONLINE"
+                                            className="hidden"
+                                            checked={paymentMethod === 'ONLINE'}
+                                            onChange={(e) => setPaymentMethod(e.target.value)}
+                                        />
+                                    </div>
+                                </label>
                             </div>
                         </div>
                     </div>

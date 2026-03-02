@@ -57,7 +57,7 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ slug:
         }
 
         addItemToCart({
-            id: productData._id,
+            id: productData.id || productData._id,
             name: productData.name,
             price: productData.price,
             image: productData.images?.[0] || "/honey.jpg",
@@ -65,7 +65,7 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ slug:
             size: size || (productData.unitQuantity ? productData.unitQuantity : "Standard")
         });
 
-        toast.success(`${quantity}x ${productData.name} added to cart.`);
+        router.push("/cart");
     };
 
     const toggleWishlist = async () => {

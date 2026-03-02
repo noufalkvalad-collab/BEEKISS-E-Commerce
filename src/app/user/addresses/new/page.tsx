@@ -1,0 +1,178 @@
+"use client";
+
+import { Suspense, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { ArrowLeft, Loader2 } from "lucide-react";
+import Link from "next/link";
+import { toast } from "sonner";
+
+function AddAddressForm() {
+    const router = useRouter();
+    const searchParams = useSearchParams();
+    const callbackUrl = searchParams.get("callbackUrl") || "/checkout";
+
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [address, setAddress] = useState({
+        name: "",
+        houseName: "",
+        phone: "",
+        pincode: "",
+        district: "",
+        state: "",
+        landmark: ""
+    });
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setIsSubmitting(true);
+
+        try {
+            const res = await fetch("/api/user/addresses", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(address)
+            });
+
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || "Failed to add address");
+
+            toast.success("Address added successfully!");
+            router.push(callbackUrl);
+        } catch (error: any) {
+            toast.error(error.message);
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    return (
+        <main className="min-h-screen bg-[#FDFDF9] pt-32 pb-24 px-6 md:px-12 flex items-center justify-center">
+            <div className="max-w-xl w-full">
+                <Link href={callbackUrl} className="inline-flex items-center gap-2 text-[#0F2E1D]/60 hover:text-[#D4A017] font-semibold transition-colors mb-8 group">
+                    <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
+                    Back
+                </Link>
+
+                <div className="bg-white p-8 md:p-10 rounded-3xl shadow-xl border border-[#0F2E1D]/5">
+                    <h1 className="text-3xl font-serif font-bold text-[#0F2E1D] mb-8">Add New Delivery Address</h1>
+
+                    <form onSubmit={handleSubmit} className="space-y-6">
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Full Name *</label>
+                            <input
+                                required
+                                type="text"
+                                value={address.name}
+                                onChange={e => setAddress({ ...address, name: e.target.value })}
+                                className="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:border-[#D4A017] focus:ring-1 focus:ring-[#D4A017]"
+                                placeholder="John Doe"
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">House Name / Flat No. *</label>
+                            <input
+                                required
+                                type="text"
+                                value={address.houseName}
+                                onChange={e => setAddress({ ...address, houseName: e.target.value })}
+                                className="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:border-[#D4A017] focus:ring-1 focus:ring-[#D4A017]"
+                                placeholder="123 Bee Hive Appts"
+                            />
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number *</label>
+                                <input
+                                    required
+                                    type="tel"
+                                    value={address.phone}
+                                    onChange={e => setAddress({ ...address, phone: e.target.value })}
+                                    className="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:border-[#D4A017] focus:ring-1 focus:ring-[#D4A017]"
+                                    placeholder="+91 9876543210"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Pincode *</label>
+                                <input
+                                    required
+                                    type="text"
+                                    value={address.pincode}
+                                    onChange={e => setAddress({ ...address, pincode: e.target.value })}
+                                    className="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:border-[#D4A017] focus:ring-1 focus:ring-[#D4A017]"
+                                    placeholder="682001"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">District *</label>
+                                <input
+                                    required
+                                    type="text"
+                                    value={address.district}
+                                    onChange={e => setAddress({ ...address, district: e.target.value })}
+                                    className="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:border-[#D4A017] focus:ring-1 focus:ring-[#D4A017]"
+                                    placeholder="Ernakulam"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">State *</label>
+                                <input
+                                    required
+                                    type="text"
+                                    value={address.state}
+                                    onChange={e => setAddress({ ...address, state: e.target.value })}
+                                    className="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:border-[#D4A017] focus:ring-1 focus:ring-[#D4A017]"
+                                    placeholder="Kerala"
+                                />
+                            </div>
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Landmark (Optional)</label>
+                            <input
+                                type="text"
+                                value={address.landmark}
+                                onChange={e => setAddress({ ...address, landmark: e.target.value })}
+                                className="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:border-[#D4A017] focus:ring-1 focus:ring-[#D4A017]"
+                                placeholder="Near the old banyan tree"
+                            />
+                        </div>
+
+                        <div className="pt-4">
+                            <button
+                                type="submit"
+                                disabled={isSubmitting}
+                                className="w-full bg-[#0F2E1D] text-[#D4A017] font-bold py-4 rounded-xl flex items-center justify-center gap-2 hover:bg-[#163b22] transition-colors font-sans text-lg disabled:opacity-70 disabled:cursor-not-allowed"
+                            >
+                                {isSubmitting ? (
+                                    <>
+                                        <Loader2 className="w-5 h-5 animate-spin" />
+                                        Saving...
+                                    </>
+                                ) : (
+                                    "Save Delivery Address"
+                                )}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </main>
+    );
+}
+
+export default function AddAddressPage() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen bg-[#FDFDF9] flex items-center justify-center">
+                <Loader2 className="w-10 h-10 animate-spin text-[#D4A017]" />
+            </div>
+        }>
+            <AddAddressForm />
+        </Suspense>
+    );
+}

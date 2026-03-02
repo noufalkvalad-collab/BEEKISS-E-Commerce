@@ -14,10 +14,18 @@ export async function POST(request: Request) {
         }
 
         const body = await request.json();
-        const { items } = body;
+        const { items, address, paymentMethod } = body;
 
         if (!items || !Array.isArray(items) || items.length === 0) {
             return NextResponse.json({ success: false, error: "Invalid cart data" }, { status: 400 });
+        }
+
+        if (!address || !address.name || !address.houseName || !address.phone || !address.pincode || !address.district || !address.state) {
+            return NextResponse.json({ success: false, error: "Missing required address fields" }, { status: 400 });
+        }
+
+        if (!paymentMethod || !['COD', 'ONLINE'].includes(paymentMethod)) {
+            return NextResponse.json({ success: false, error: "Invalid payment method" }, { status: 400 });
         }
 
         await dbConnect();
@@ -49,6 +57,16 @@ export async function POST(request: Request) {
             userEmail: session.user.email,
             items: processedItems,
             totalAmount: calculatedTotal,
+            address: {
+                name: address.name,
+                houseName: address.houseName,
+                phone: address.phone,
+                pincode: address.pincode,
+                district: address.district,
+                state: address.state,
+                landmark: address.landmark || ""
+            },
+            paymentMethod: paymentMethod,
             status: "Pending"
         });
 

@@ -4,42 +4,52 @@ import Image from "next/image";
 import Link from "next/link";
 import { ChevronRight, Star, Truck, ShieldCheck, Leaf } from "lucide-react";
 import { useCartStore } from "@/lib/store/useCartStore";
-import { useState } from "react";
-
-// Mock data
-const productData = {
-    id: "wildflower-reserve",
-    name: "Wildflower Reserve",
-    slug: "wildflower-reserve",
-    price: 1299,
-    description: "Our signature Wildflower Reserve is harvested from the untouched meadows of the high forests. This rare, slow-crystallizing honey offers a delicate floral bouquet with subtle notes of vanilla and warm spice. Unpasteurized, unfiltered, and 100% organic.",
-    category: "Raw Honey",
-    stock: 124,
-    image: "/honey.jpg",
-    badges: ["Bestseller", "Organic"]
-};
+import { useState, useEffect } from "react";
 
 export default function ProductDetailsPage({ params }: { params: { slug: string } }) {
+    const [productData, setProductData] = useState<any>(null);
+    const [isLoading, setIsLoading] = useState(true);
     const [quantity, setQuantity] = useState(1);
-    const [size, setSize] = useState("500g");
+    const [size, setSize] = useState("");
     const addItem = useCartStore((state) => state.addItem);
 
-    const handleAddToCart = () => {
-        // Price variation logic could go here based on size
-        const adjustedPrice = size === "250g" ? 799 : size === "1kg" ? 2399 : productData.price;
+    useEffect(() => {
+        fetch(`/api/products/${params.slug}`)
+            .then(res => res.json())
+            .then(data => {
+                setProductData(data);
+                if (data.unitQuantity) {
+                    setSize(data.unitQuantity);
+                }
+                setIsLoading(false);
+            })
+            .catch(err => {
+                console.error("Failed to fetch product:", err);
+                setIsLoading(false);
+            });
+    }, [params.slug]);
 
+    const handleAddToCart = () => {
+        if (!productData) return;
         addItem({
-            id: productData.id,
+            id: productData._id,
             name: productData.name,
-            price: adjustedPrice,
-            image: productData.image,
+            price: productData.price,
+            image: productData.images?.[0] || "/honey.jpg",
             quantity,
-            size
+            size: size || "Standard"
         });
 
-        // Optional: add a toast notification
-        alert(`${quantity}x ${productData.name} (${size}) added to cart.`);
+        alert(`${quantity}x ${productData.name} added to cart.`);
     };
+
+    if (isLoading) {
+        return <div className="min-h-screen flex items-center justify-center pt-24 pb-24 text-forest-green">Loading product...</div>;
+    }
+
+    if (!productData || productData.error) {
+        return <div className="min-h-screen flex items-center justify-center pt-24 pb-24 text-red-500">Product not found.</div>;
+    }
 
     return (
         <div className="min-h-screen bg-background pt-24 pb-24">
@@ -59,18 +69,18 @@ export default function ProductDetailsPage({ params }: { params: { slug: string 
                     {/* Product Image */}
                     <div className="relative aspect-square md:aspect-[4/5] bg-gray-50 rounded-2xl overflow-hidden shadow-sm">
                         <Image
-                            src={productData.image}
+                            src={productData.images && productData.images.length > 0 ? productData.images[0] : "/honey.jpg"}
                             alt={productData.name}
                             fill
                             className="object-cover"
                             priority
                         />
                         <div className="absolute top-4 left-4 flex gap-2">
-                            {productData.badges.map(badge => (
-                                <span key={badge} className="bg-honey-gold text-forest-green text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full shadow-sm">
-                                    {badge}
+                            {productData.badge && (
+                                <span className="bg-honey-gold text-forest-green text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full shadow-sm">
+                                    {productData.badge}
                                 </span>
-                            ))}
+                            )}
                         </div>
                     </div>
 
@@ -89,30 +99,30 @@ export default function ProductDetailsPage({ params }: { params: { slug: string 
                             <span className="text-gray-500 text-sm font-light">(128 reviews)</span>
                         </div>
 
-                        <p className="text-3xl font-medium text-forest-green mb-8">
-                            ₹{(size === "250g" ? 799 : size === "1kg" ? 2399 : productData.price).toLocaleString('en-IN')}
+                        <p className="text-3xl font-medium text-forest-green mb-8 flex items-baseline gap-4">
+                            ₹{productData.price.toLocaleString('en-IN')}
+                            {productData.compareAtPrice && (
+                                <span className="text-lg text-gray-400 line-through">₹{productData.compareAtPrice.toLocaleString('en-IN')}</span>
+                            )}
                         </p>
 
                         <p className="text-gray-600 font-light leading-relaxed mb-8">
-                            {productData.description}
+                            {productData.description || "No description available for this product."}
                         </p>
 
                         {/* Weight Options */}
                         <div className="mb-8">
                             <h3 className="font-medium text-forest-green mb-3">Sizes Available</h3>
                             <div className="flex gap-4">
-                                {["250g", "500g", "1kg"].map(s => (
-                                    <button
-                                        key={s}
-                                        onClick={() => setSize(s)}
-                                        className={`px - 6 py - 2 border - 2 font - medium rounded transition - colors ${size === s
-                                            ? "border-honey-gold text-forest-green"
-                                            : "border-gray-200 text-gray-500 hover:border-honey-gold hover:text-forest-green"
-                                            } `}
-                                    >
-                                        {s}
-                                    </button>
-                                ))}
+                                {productData.unitQuantity ? (
+                                    <span className="px-6 py-2 border-2 font-medium rounded transition-colors border-honey-gold text-forest-green">
+                                        {productData.unitQuantity}
+                                    </span>
+                                ) : (
+                                    <span className="px-6 py-2 border-2 font-medium rounded transition-colors border-honey-gold text-forest-green">
+                                        Standard Size
+                                    </span>
+                                )}
                             </div>
                         </div>
 

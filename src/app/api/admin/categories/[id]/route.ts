@@ -27,6 +27,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
                 name: body.name,
                 slug: body.slug,
                 description: body.description,
+                image: body.image,
                 isActive: body.isActive,
             },
             { new: true, runValidators: true }

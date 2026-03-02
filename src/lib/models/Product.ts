@@ -5,10 +5,10 @@ export interface IProduct extends Document {
     slug: string;
     description?: string;
     price: number;
-    compareAtPrice?: number;
     category: mongoose.Types.ObjectId; // Reference to Category
     images: string[];
     badge?: string; // e.g., "Bestseller", "New"
+    unitQuantity?: string; // e.g., "500g", "1kg", "1 Liter"
     stock: number;
     isActive: boolean;
     createdAt: Date;
@@ -38,10 +38,6 @@ const ProductSchema = new Schema<IProduct>(
             required: [true, "Product price is required"],
             min: [0, "Price cannot be negative"],
         },
-        compareAtPrice: {
-            type: Number,
-            min: [0, "Compare at price cannot be negative"],
-        },
         category: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "Category",
@@ -54,6 +50,11 @@ const ProductSchema = new Schema<IProduct>(
         badge: {
             type: String,
             trim: true,
+        },
+        unitQuantity: {
+            type: String,
+            trim: true,
+            default: "",
         },
         stock: {
             type: Number,

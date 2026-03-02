@@ -2,7 +2,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { Filter, SlidersHorizontal, ChevronDown } from "lucide-react";
 import dbConnect from "@/lib/db/mongodb";
+import Category from "@/lib/models/Category";
 import Product from "@/lib/models/Product";
+import ProductCardActions from "@/components/ProductCardActions";
 
 export default async function ProductsPage() {
     await dbConnect();
@@ -111,7 +113,10 @@ export default async function ProductsPage() {
                                         </span>
                                     )}
                                     {/* Hover Overlay */}
-                                    <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                                    <div className="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                                    <div className="absolute top-4 right-4 z-20">
+                                        <ProductCardActions product={product} />
+                                    </div>
                                 </div>
 
                                 <h3 className="text-lg font-serif font-semibold text-gray-900 group-hover:text-honey-gold transition-colors">

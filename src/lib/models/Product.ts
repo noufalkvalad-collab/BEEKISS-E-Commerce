@@ -1,4 +1,5 @@
 import mongoose, { Document, Model, Schema } from "mongoose";
+import "./Category"; // Ensure Category schema is registered before Product population
 
 export interface IProduct extends Document {
     name: string;
@@ -74,7 +75,6 @@ const ProductSchema = new Schema<IProduct>(
 
 // Optimize query routing
 ProductSchema.index({ category: 1 });
-ProductSchema.index({ slug: 1 });
 
 const Product: Model<IProduct> = mongoose.models.Product || mongoose.model<IProduct>("Product", ProductSchema);
 

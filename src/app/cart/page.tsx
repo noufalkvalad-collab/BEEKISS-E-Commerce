@@ -5,16 +5,26 @@ import Image from "next/image";
 import { useCartStore } from "@/lib/store/useCartStore";
 import { Trash2, ChevronRight, Lock } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
 export default function CartPage() {
     const { items, updateQuantity, removeItem, totalPrice } = useCartStore();
     const [mounted, setMounted] = useState(false);
+    const { status } = useSession();
+    const router = useRouter();
 
     useEffect(() => {
         setMounted(true);
     }, []);
 
-    if (!mounted) {
+    useEffect(() => {
+        if (mounted && status === "unauthenticated") {
+            router.push("/login?callbackUrl=/cart");
+        }
+    }, [mounted, status, router]);
+
+    if (!mounted || status === "loading" || status === "unauthenticated") {
         return <div className="min-h-[70vh] flex items-center justify-center">Loading cart...</div>;
     }
 

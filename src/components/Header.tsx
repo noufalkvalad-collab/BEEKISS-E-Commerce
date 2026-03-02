@@ -1,21 +1,34 @@
 "use client";
 
 import Link from "next/link";
-import { ShoppingBag, Search, Menu, X, User } from "lucide-react";
+import { ShoppingBag, Search, Menu, X, User, Heart } from "lucide-react";
 import { useCartStore } from "@/lib/store/useCartStore";
+import { useWishlistStore } from "@/lib/store/useWishlistStore";
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
 
 export default function Header() {
     const totalItems = useCartStore((state) => state.totalItems());
+    const wishlistCount = useWishlistStore((state) => state.items.length);
+    const setWishlistItems = useWishlistStore((state) => state.setItems);
     const [mounted, setMounted] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const { data: session, status } = useSession();
 
     useEffect(() => {
         setMounted(true);
-    }, []);
+        if (status === "authenticated") {
+            fetch("/api/user/wishlist", { cache: "no-store" })
+                .then(res => res.json())
+                .then(data => {
+                    if (Array.isArray(data)) {
+                        setWishlistItems(data.map((p: any) => p.id || p._id?.toString()));
+                    }
+                })
+                .catch(err => console.error("Failed to fetch initial wishlist", err));
+        }
+    }, [status, setWishlistItems]);
 
     const toggleMobileMenu = () => {
         setIsMobileMenuOpen(!isMobileMenuOpen);
@@ -74,14 +87,27 @@ export default function Header() {
                         )}
                     </Link>
 
-                    <Link href="/cart" className="text-[#D4A017] hover:text-white transition-colors relative flex items-center" suppressHydrationWarning>
-                        <ShoppingBag className="w-6 h-6" />
-                        {mounted && totalItems > 0 && (
-                            <span className="absolute -top-2 -right-2 bg-white text-[#0F2E1D] text-[10px] w-5 h-5 flex items-center justify-center rounded-full font-bold shadow-sm border border-[#D4A017]" suppressHydrationWarning>
-                                {totalItems}
-                            </span>
-                        )}
-                    </Link>
+                    {status === 'authenticated' && (
+                        <Link href="/wishlist" className="text-[#D4A017] hover:text-white transition-colors relative flex items-center" suppressHydrationWarning>
+                            <Heart className="w-6 h-6" />
+                            {mounted && wishlistCount > 0 && (
+                                <span className="absolute -top-2 -right-2 bg-white text-[#0F2E1D] text-[10px] w-5 h-5 flex items-center justify-center rounded-full font-bold shadow-sm border border-[#D4A017]" suppressHydrationWarning>
+                                    {wishlistCount}
+                                </span>
+                            )}
+                        </Link>
+                    )}
+
+                    {status === 'authenticated' && (
+                        <Link href="/cart" className="text-[#D4A017] hover:text-white transition-colors relative flex items-center" suppressHydrationWarning>
+                            <ShoppingBag className="w-6 h-6" />
+                            {mounted && totalItems > 0 && (
+                                <span className="absolute -top-2 -right-2 bg-white text-[#0F2E1D] text-[10px] w-5 h-5 flex items-center justify-center rounded-full font-bold shadow-sm border border-[#D4A017]" suppressHydrationWarning>
+                                    {totalItems}
+                                </span>
+                            )}
+                        </Link>
+                    )}
                 </div>
             </div>
 

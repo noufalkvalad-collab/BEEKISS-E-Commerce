@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useCartStore } from "@/lib/store/useCartStore";
 import { useWishlistStore } from "@/lib/store/useWishlistStore";
 import { useState } from "react";
+import { toast } from "sonner";
 
 export default function ProductCardActions({ product, className = "" }: { product: any, className?: string }) {
     const { status } = useSession();
@@ -32,7 +33,7 @@ export default function ProductCardActions({ product, className = "" }: { produc
             quantity: 1,
             size: "Standard"
         });
-        alert(`1x ${product.name} added to cart.`);
+        toast.success(`1x ${product.name} added to cart.`);
     };
 
     const toggleWishlist = async (e: React.MouseEvent) => {

@@ -21,11 +21,14 @@
   --font-sans: var(--font-poppins);
   --font-serif: var(--font-playfair);
 
-  --color-primary: var(--color-honey-gold);
-  --color-primary-foreground: var(--color-forest-green);
-  --color-secondary: var(--color-forest-green);
+  --color-primary: #D4A017;
+  --color-primary-foreground: #0F2E1D;
+  --color-secondary: #0F2E1D;
   --color-secondary-foreground: #ffffff;
-  --color-accent: var(--color-honey-light);
+  --color-accent: #F9E4B7;
+  --color-forest-green: #0F2E1D;
+  --color-honey-gold: #D4A017;
+  --color-honey-light: #F9E4B7;
 }
 
 body {

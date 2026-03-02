@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import dbConnect from "@/lib/db/mongodb";
+import Category from "@/lib/models/Category";
 import Product from "@/lib/models/Product";
 
 export async function GET(req: Request, { params }: { params: Promise<{ slug: string }> }) {

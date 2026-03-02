@@ -1,11 +1,13 @@
 import mongoose, { Document, Model, Schema } from 'mongoose';
 import bcrypt from 'bcryptjs';
+import './Product'; // Ensure Product schema is loaded for wishlist population
 
 export interface IUser extends Document {
     name: string;
     email: string;
     password?: string;
     role: 'user' | 'admin';
+    wishlist: mongoose.Types.ObjectId[];
     comparePassword(password: string): Promise<boolean>;
 }
 
@@ -36,6 +38,10 @@ const UserSchema = new Schema<IUser>(
             enum: ['user', 'admin'],
             default: 'user',
         },
+        wishlist: [{
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Product'
+        }]
     },
     {
         timestamps: true,

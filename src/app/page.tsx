@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ArrowRight, Leaf, ShieldCheck, Droplets } from "lucide-react";
 import dbConnect from "@/lib/db/mongodb";
 import Product from "@/lib/models/Product";
+import ProductCardActions from "@/components/ProductCardActions";
 
 export default async function Home() {
   await dbConnect();
@@ -143,6 +144,9 @@ export default async function Home() {
                       fill
                       className="object-cover group-hover:scale-105 transition-transform duration-500"
                     />
+                    <div className="absolute top-4 right-4 z-20">
+                      <ProductCardActions product={prod} />
+                    </div>
                   </div>
                   <div className="p-8 flex flex-col flex-1 text-center bg-white justify-between">
                     <div>

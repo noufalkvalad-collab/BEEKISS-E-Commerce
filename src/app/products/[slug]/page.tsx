@@ -10,6 +10,7 @@ import ProductCardActions from "@/components/ProductCardActions";
 import { useState, useEffect, use } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 export default function ProductDetailsPage({ params }: { params: Promise<{ slug: string }> }) {
     const resolvedParams = use(params);
@@ -61,10 +62,10 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ slug:
             price: productData.price,
             image: productData.images?.[0] || "/honey.jpg",
             quantity,
-            size: size || "Standard"
+            size: size || (productData.unitQuantity ? productData.unitQuantity : "Standard")
         });
 
-        alert(`${quantity}x ${productData.name} added to cart.`);
+        toast.success(`${quantity}x ${productData.name} added to cart.`);
     };
 
     const toggleWishlist = async () => {
@@ -190,10 +191,10 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ slug:
 
                         {/* Quantity & Add to Cart */}
                         <div className="flex gap-4 mb-10">
-                            <div className="flex items-center border border-gray-300 rounded w-32">
+                            <div className="flex items-center border border-gray-300 rounded w-28">
                                 <button
                                     onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                                    className="px-4 py-3 text-gray-500 hover:text-forest-green transition-colors"
+                                    className="px-3 py-2 text-gray-500 hover:text-forest-green transition-colors"
                                 >
                                     -
                                 </button>
@@ -201,18 +202,18 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ slug:
                                     type="text"
                                     value={quantity}
                                     readOnly
-                                    className="w-full bg-transparent text-center focus:outline-none font-medium text-forest-green"
+                                    className="w-full bg-transparent text-center focus:outline-none font-medium text-forest-green text-sm"
                                 />
                                 <button
                                     onClick={() => setQuantity(quantity + 1)}
-                                    className="px-4 py-3 text-gray-500 hover:text-forest-green transition-colors"
+                                    className="px-3 py-2 text-gray-500 hover:text-forest-green transition-colors"
                                 >
                                     +
                                 </button>
                             </div>
                             <button
                                 onClick={handleAddToCart}
-                                className="flex-1 bg-forest-green text-white font-semibold rounded hover:bg-forest-green/90 transition-colors shadow-lg"
+                                className="px-10 bg-[#0F2E1D] text-white font-semibold rounded hover:bg-[#0F2E1D]/90 transition-colors shadow-sm py-2 text-sm"
                             >
                                 Add to Cart
                             </button>
@@ -263,7 +264,7 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ slug:
                                             fill
                                             className="object-cover group-hover:scale-105 transition-transform duration-500"
                                         />
-                                        <div className="absolute top-3 right-3 z-20">
+                                        <div className="absolute top-3 right-3 z-20" onClick={(e) => e.preventDefault()}>
                                             <ProductCardActions product={product} />
                                         </div>
                                     </div>
@@ -280,14 +281,14 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ slug:
             </div>
 
             {/* Sticky Mobile Add To Cart Bar */}
-            <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 p-4 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] md:hidden z-40 flex items-center justify-between gap-4">
+            <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 p-3 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] md:hidden z-40 flex items-center justify-between gap-3">
                 <div className="flex flex-col">
-                    <span className="font-semibold text-gray-900 truncate max-w-[150px]">{productData.name}</span>
-                    <span className="text-forest-green font-medium text-sm">₹{productData.price.toLocaleString('en-IN')}</span>
+                    <span className="font-semibold text-gray-900 truncate max-w-[150px] text-sm">{productData.name}</span>
+                    <span className="text-forest-green font-medium text-xs">₹{productData.price.toLocaleString('en-IN')}</span>
                 </div>
                 <button
                     onClick={handleAddToCart}
-                    className="flex-1 bg-forest-green text-white font-semibold py-3 px-6 rounded hover:bg-forest-green/90 transition-colors shadow-sm whitespace-nowrap text-center"
+                    className="flex-1 bg-[#0F2E1D] text-white font-semibold py-2 px-4 rounded text-sm hover:bg-[#0F2E1D]/90 transition-colors shadow-sm whitespace-nowrap text-center max-w-[80px]"
                 >
                     Add to Cart
                 </button>

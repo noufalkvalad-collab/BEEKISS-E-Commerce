@@ -3,6 +3,7 @@ import { Playfair_Display, Poppins } from "next/font/google";
 import "./globals.css";
 import AuthProvider from "@/components/providers/AuthProvider";
 import LayoutWrapper from "@/components/LayoutWrapper";
+import { Toaster } from "sonner";
 
 const playfair = Playfair_Display({
   variable: "--font-playfair",
@@ -32,6 +33,7 @@ export default function RootLayout({
         className={`${playfair.variable} ${poppins.variable} font-poppins antialiased bg-background text-foreground flex flex-col min-h-screen`}
       >
         <AuthProvider>
+          <Toaster position="top-right" richColors />
           <LayoutWrapper>
             {children}
           </LayoutWrapper>

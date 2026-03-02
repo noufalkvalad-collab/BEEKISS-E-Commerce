@@ -1,9 +1,24 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Filter, SlidersHorizontal, ChevronDown } from "lucide-react";
-import { products } from "@/lib/data/products";
+import dbConnect from "@/lib/db/mongodb";
+import Product from "@/lib/models/Product";
 
-export default function ProductsPage() {
+export default async function ProductsPage() {
+    await dbConnect();
+    const dbProducts = await Product.find({ isActive: true }).populate("category", "name slug").sort({ createdAt: -1 }).lean();
+
+    // Map to the format expected by the UI
+    const products = dbProducts.map((p: any) => ({
+        id: p._id.toString(),
+        name: p.name,
+        slug: p.slug,
+        category: p.category?.name || "Uncategorized",
+        price: p.price,
+        image: p.images && p.images.length > 0 ? p.images[0] : "/honey.jpg",
+        badge: p.badge || null,
+    }));
+
     return (
         <div className="min-h-screen bg-background pt-10 pb-24">
 
@@ -66,7 +81,7 @@ export default function ProductsPage() {
                     {/* Top Bar for Sorting & Results Count */}
                     <div className="flex flex-col sm:flex-row justify-between items-center mb-8 pb-4 border-b border-gray-100">
                         <p className="text-gray-500 text-sm mb-4 sm:mb-0">
-                            Showing <span className="font-semibold text-gray-800">1-6</span> of 12 products
+                            Showing <span className="font-semibold text-gray-800">{products.length}</span> products
                         </p>
 
                         <div className="flex items-center gap-2 text-sm">

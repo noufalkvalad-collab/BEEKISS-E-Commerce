@@ -1,7 +1,7 @@
 import NextAuth, { NextAuthOptions } from "next-auth"
 import GoogleProvider from "next-auth/providers/google"
-import CredentialsProvider from "next-auth/providers/credentials"
-
+import dbConnect from "@/lib/db/mongodb"
+import User from "@/lib/models/User"
 export const authOptions: NextAuthOptions = {
     providers: [
         GoogleProvider({
@@ -9,6 +9,31 @@ export const authOptions: NextAuthOptions = {
             clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
         }),
     ],
+    callbacks: {
+        async signIn({ user, account, profile }) {
+            if (account?.provider === "google") {
+                try {
+                    await dbConnect();
+
+                    const userExists = await User.findOne({ email: user.email });
+
+                    if (!userExists) {
+                        await User.create({
+                            name: user.name || "Google User",
+                            email: user.email || "",
+                            role: "user",
+                            // No password since they use Google
+                        });
+                    }
+                    return true;
+                } catch (error) {
+                    console.error("Error saving Google user to DB:", error);
+                    return false;
+                }
+            }
+            return true;
+        }
+    },
     pages: {
         signIn: '/login',
     },

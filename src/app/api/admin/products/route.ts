@@ -39,8 +39,8 @@ export async function POST(req: Request) {
         const body = await req.json();
 
         // Validate required fields
-        if (!body.name || !body.slug || !body.price || !body.category) {
-            return NextResponse.json({ error: "Name, Slug, Price, and Category are required" }, { status: 400 });
+        if (!body.name || !body.slug || !body.category || !body.variants || !body.variants.length) {
+            return NextResponse.json({ error: "Name, Slug, Category, and at least one Variant are required" }, { status: 400 });
         }
 
         // Ensure category exists
@@ -53,12 +53,10 @@ export async function POST(req: Request) {
             name: body.name,
             slug: body.slug,
             description: body.description,
-            price: Number(body.price),
             category: body.category,
             images: body.images || [],
             badge: body.badge,
-            unitQuantity: body.unitQuantity,
-            stock: Number(body.stock || 0),
+            variants: body.variants,
             isActive: body.isActive ?? true,
         });
 

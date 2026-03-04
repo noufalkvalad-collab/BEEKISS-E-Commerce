@@ -29,7 +29,7 @@ export async function POST(request: Request) {
         }
 
         await dbConnect();
-        const dbProducts = await Product.find({ isActive: true }).lean();
+        const dbProducts = await Product.find({ isActive: true }).lean() as any[];
 
         // 1. Recalculate total amount securely on the server
         let calculatedTotal = 0;
@@ -37,8 +37,21 @@ export async function POST(request: Request) {
             if (!item.id || !item.quantity) throw new Error("Malformed item data");
 
             const product = dbProducts.find((p: any) => p._id.toString() === String(item.id));
-            const serverPrice = product ? product.price : 0;
-            if (serverPrice === 0) throw new Error(`Product not found: ${item.id}`);
+            if (!product) throw new Error(`Product not found: ${item.id}`);
+
+            let serverPrice = product.price || 0;
+
+            if (product.variants && product.variants.length > 0 && item.size) {
+                const variant = product.variants.find((v: any) => v.weight === item.size);
+                if (variant) {
+                    serverPrice = variant.price;
+                }
+            } else if (item.size && product.unitQuantity && item.size !== product.unitQuantity) {
+                // If it doesn't have variants array but has a unitQuantity, it must match
+                // (This is primarily to catch mismatched legacy items smoothly, but we won't throw here for simplicity, just use base price or variant price if found)
+            }
+
+            if (serverPrice === 0) throw new Error(`Invalid or missing price for product: ${item.id}`);
 
             const itemTotal = serverPrice * item.quantity;
             calculatedTotal += itemTotal;

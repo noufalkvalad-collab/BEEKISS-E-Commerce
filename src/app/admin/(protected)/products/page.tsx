@@ -17,11 +17,9 @@ export default function ProductsPage() {
         name: "",
         slug: "",
         description: "",
-        price: "",
         category: "",
-        unitQuantity: "",
-        stock: "10",
         images: [] as string[],
+        variants: [{ weight: "", price: "", stock: "10" }],
         isActive: true,
     });
 
@@ -67,7 +65,7 @@ export default function ProductsPage() {
                 setIsAddModalOpen(false);
                 setEditingId(null);
                 setNewProduct({
-                    name: "", slug: "", description: "", price: "", category: "", unitQuantity: "", stock: "10", images: [], isActive: true
+                    name: "", slug: "", description: "", category: "", images: [], variants: [{ weight: "", price: "", stock: "10" }], isActive: true
                 });
                 fetchData(); // Refresh list
             } else {
@@ -88,12 +86,12 @@ export default function ProductsPage() {
             name: prod.name,
             slug: prod.slug,
             description: prod.description || "",
-            price: prod.price?.toString() || "",
             category: prod.category?._id || "",
-            unitQuantity: prod.unitQuantity || "",
-            stock: prod.stock?.toString() || "0",
             images: prod.images || [],
-            isActive: prod.isActive,
+            variants: prod.variants && prod.variants.length > 0
+                ? prod.variants.map((v: any) => ({ weight: v.weight, price: v.price?.toString() || "", stock: v.stock?.toString() || "" }))
+                : [{ weight: prod.unitQuantity || "Standard", price: prod.price?.toString() || "", stock: prod.stock?.toString() || "0" }],
+            isActive: prod.isActive ?? true,
         });
         setIsAddModalOpen(true);
     };
@@ -126,7 +124,7 @@ export default function ProductsPage() {
                     onClick={() => {
                         setEditingId(null);
                         setNewProduct({
-                            name: "", slug: "", description: "", price: "", category: "", unitQuantity: "", stock: "10", images: [], isActive: true
+                            name: "", slug: "", description: "", category: "", images: [], variants: [{ weight: "", price: "", stock: "10" }], isActive: true
                         });
                         setIsAddModalOpen(true);
                     }}
@@ -188,26 +186,47 @@ export default function ProductsPage() {
                                     </div>
                                 </div>
                                 <div className="space-y-4">
-                                    <div className="grid gap-4">
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-1">Price (₹) *</label>
-                                            <input type="number" required min="0" step="0.01" value={newProduct.price}
-                                                onChange={(e) => setNewProduct({ ...newProduct, price: e.target.value })}
-                                                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#D4A017]/50" placeholder="0.00" />
+                                    <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                                        <div className="flex justify-between items-center mb-3">
+                                            <label className="block text-sm font-medium text-gray-800">Product Variants *</label>
+                                            <button type="button" onClick={() => setNewProduct({ ...newProduct, variants: [...newProduct.variants, { weight: "", price: "", stock: "10" }] })}
+                                                className="text-xs text-honey-gold hover:text-yellow-700 font-medium">+ Add Size</button>
                                         </div>
-                                    </div>
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-1">Unit Size</label>
-                                            <input type="text" value={newProduct.unitQuantity}
-                                                onChange={(e) => setNewProduct({ ...newProduct, unitQuantity: e.target.value })}
-                                                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#D4A017]/50" placeholder="e.g. 500g" />
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-1">Quantity in Stock *</label>
-                                            <input type="number" required min="0" value={newProduct.stock}
-                                                onChange={(e) => setNewProduct({ ...newProduct, stock: e.target.value })}
-                                                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#D4A017]/50" placeholder="10" />
+                                        <div className="space-y-3">
+                                            {newProduct.variants.map((variant, index) => (
+                                                <div key={index} className="flex gap-2 items-center bg-white p-2 border border-gray-100 rounded shadow-sm">
+                                                    <input type="text" required placeholder="Size / Weight (e.g. 250g)" value={variant.weight}
+                                                        onChange={(e) => {
+                                                            const newVariants = [...newProduct.variants];
+                                                            newVariants[index].weight = e.target.value;
+                                                            setNewProduct({ ...newProduct, variants: newVariants });
+                                                        }}
+                                                        className="w-1/3 px-3 py-1.5 text-sm border border-gray-200 rounded focus:ring-1 focus:ring-[#D4A017]/50" />
+                                                    <input type="number" required min="0" step="0.01" placeholder="Variant Price ₹" value={variant.price}
+                                                        onChange={(e) => {
+                                                            const newVariants = [...newProduct.variants];
+                                                            newVariants[index].price = e.target.value;
+                                                            setNewProduct({ ...newProduct, variants: newVariants });
+                                                        }}
+                                                        className="w-1/3 px-3 py-1.5 text-sm border border-gray-200 rounded focus:ring-1 focus:ring-[#D4A017]/50" />
+                                                    <input type="number" required min="0" placeholder="Variant Stock Qty" value={variant.stock}
+                                                        onChange={(e) => {
+                                                            const newVariants = [...newProduct.variants];
+                                                            newVariants[index].stock = e.target.value;
+                                                            setNewProduct({ ...newProduct, variants: newVariants });
+                                                        }}
+                                                        className="w-1/4 px-3 py-1.5 text-sm border border-gray-200 rounded focus:ring-1 focus:ring-[#D4A017]/50" />
+                                                    {newProduct.variants.length > 1 && (
+                                                        <button type="button" onClick={() => {
+                                                            const newVariants = newProduct.variants.filter((_, i) => i !== index);
+                                                            setNewProduct({ ...newProduct, variants: newVariants });
+                                                        }}
+                                                            className="text-gray-400 hover:text-red-500 p-1 transition-colors">
+                                                            <Trash2 className="w-4 h-4" />
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            ))}
                                         </div>
                                     </div>
                                     <div>
@@ -333,7 +352,7 @@ export default function ProductsPage() {
                                         <td className="px-6 py-4">
                                             <div className="font-medium text-[#0F2E1D]">
                                                 {prod.name}
-                                                {prod.unitQuantity && (
+                                                {(!prod.variants || prod.variants.length === 0) && prod.unitQuantity && (
                                                     <span className="ml-2 text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full border border-gray-200">
                                                         {prod.unitQuantity}
                                                     </span>
@@ -345,17 +364,41 @@ export default function ProductsPage() {
                                             {prod.category?.name || "Uncategorized"}
                                         </td>
                                         <td className="px-6 py-4">
-                                            <div className="font-medium text-[#0F2E1D]">₹{prod.price.toLocaleString('en-IN')}</div>
+                                            <div className="font-medium text-[#0F2E1D]">
+                                                {prod.variants && prod.variants.length > 0
+                                                    ? `From ₹${Math.min(...prod.variants.map((v: any) => v.price)).toLocaleString('en-IN')}`
+                                                    : `₹${(prod.price || 0).toLocaleString('en-IN')}`
+                                                }
+                                            </div>
                                         </td>
                                         <td className="px-6 py-4">
-                                            <span className={`inline-flex px-2.5 py-1 rounded-full text-xs font-medium border ${prod.stock > 10
-                                                ? "bg-green-50 text-green-700 border-green-200"
-                                                : prod.stock > 0
-                                                    ? "bg-orange-50 text-orange-700 border-orange-200"
-                                                    : "bg-red-50 text-red-700 border-red-200"
-                                                }`}>
-                                                {prod.stock} in stock
-                                            </span>
+                                            {prod.variants && prod.variants.length > 0 ? (
+                                                <div className="flex flex-col gap-1">
+                                                    {prod.variants.map((v: any) => (
+                                                        <div key={v._id || v.weight} className="flex justify-between text-xs items-center gap-2">
+                                                            <span className="text-gray-500 w-12">{v.weight}:</span>
+                                                            <span className="text-[#0F2E1D] font-medium flex-1 text-center">₹{(v.price || 0).toLocaleString('en-IN')}</span>
+                                                            <span className={`inline-flex px-1.5 py-0.5 rounded text-[10px] font-medium border ${v.stock > 10
+                                                                ? "bg-green-50 text-green-700 border-green-200"
+                                                                : v.stock > 0
+                                                                    ? "bg-orange-50 text-orange-700 border-orange-200"
+                                                                    : "bg-red-50 text-red-700 border-red-200"
+                                                                }`}>
+                                                                {v.stock} qty
+                                                            </span>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            ) : (
+                                                <span className={`inline-flex px-2.5 py-1 rounded-full text-xs font-medium border ${prod.stock > 10
+                                                    ? "bg-green-50 text-green-700 border-green-200"
+                                                    : prod.stock > 0
+                                                        ? "bg-orange-50 text-orange-700 border-orange-200"
+                                                        : "bg-red-50 text-red-700 border-red-200"
+                                                    }`}>
+                                                    {prod.stock} in stock
+                                                </span>
+                                            )}
                                         </td>
                                         <td className="px-6 py-4 text-right">
                                             <div className="flex items-center justify-end gap-3 text-gray-400">

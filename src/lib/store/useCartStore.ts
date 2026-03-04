@@ -7,14 +7,14 @@ export interface CartItem {
     price: number;
     image: string;
     quantity: number;
-    size?: string;
+    size: string;
 }
 
 interface CartState {
     items: CartItem[];
     addItem: (item: Omit<CartItem, 'quantity'> & { quantity?: number }) => void;
-    removeItem: (id: string | number, size?: string) => void;
-    updateQuantity: (id: string | number, quantity: number, size?: string) => void;
+    removeItem: (id: string | number, size: string) => void;
+    updateQuantity: (id: string | number, quantity: number, size: string) => void;
     clearCart: () => void;
     totalItems: () => number;
     totalPrice: () => number;

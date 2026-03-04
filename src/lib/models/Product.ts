@@ -1,16 +1,20 @@
 import mongoose, { Document, Model, Schema } from "mongoose";
 import "./Category"; // Ensure Category schema is registered before Product population
 
+export interface IProductVariant {
+    weight: string; // e.g., "8g", "100g", "250g", "1Kg"
+    price: number;
+    stock: number;
+}
+
 export interface IProduct extends Document {
     name: string;
     slug: string;
     description?: string;
-    price: number;
     category: mongoose.Types.ObjectId; // Reference to Category
     images: string[];
     badge?: string; // e.g., "Bestseller", "New"
-    unitQuantity?: string; // e.g., "500g", "1kg", "1 Liter"
-    stock: number;
+    variants: IProductVariant[];
     isActive: boolean;
     createdAt: Date;
     updatedAt: Date;
@@ -34,11 +38,6 @@ const ProductSchema = new Schema<IProduct>(
             type: String,
             trim: true,
         },
-        price: {
-            type: Number,
-            required: [true, "Product price is required"],
-            min: [0, "Price cannot be negative"],
-        },
         category: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "Category",
@@ -52,16 +51,20 @@ const ProductSchema = new Schema<IProduct>(
             type: String,
             trim: true,
         },
-        unitQuantity: {
-            type: String,
-            trim: true,
-            default: "",
-        },
-        stock: {
-            type: Number,
-            required: [true, "Product stock level is required"],
-            min: [0, "Stock cannot be negative"],
-            default: 0,
+        variants: {
+            type: [
+                {
+                    weight: { type: String, required: [true, "Variant weight is required"], trim: true },
+                    price: { type: Number, required: [true, "Variant price is required"], min: [0, "Price cannot be negative"] },
+                    stock: { type: Number, required: [true, "Variant stock is required"], min: [0, "Stock cannot be negative"], default: 0 }
+                }
+            ],
+            validate: {
+                validator: function (v: any[]) {
+                    return v && v.length > 0;
+                },
+                message: "A product must have at least one variant."
+            }
         },
         isActive: {
             type: Boolean,

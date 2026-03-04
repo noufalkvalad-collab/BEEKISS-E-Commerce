@@ -5,7 +5,7 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useCartStore } from "@/lib/store/useCartStore";
 import { useWishlistStore } from "@/lib/store/useWishlistStore";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
 
 export default function ProductCardActions({ product, className = "" }: { product: any, className?: string }) {
@@ -14,14 +14,24 @@ export default function ProductCardActions({ product, className = "" }: { produc
     const addItemToCart = useCartStore((state) => state.addItem);
     const { hasItem, addItem: addWishlist, removeItem: removeWishlist } = useWishlistStore();
     const [isProcessing, setIsProcessing] = useState(false);
+    const [mounted, setMounted] = useState(false);
 
-    const isWishlisted = hasItem(product.id);
+    useEffect(() => {
+        setMounted(true);
+    }, []);
+
+    const isWishlisted = mounted ? hasItem(product.id) : false;
 
     const handleAddToCart = (e: React.MouseEvent) => {
         e.preventDefault(); // Prevent Link navigation wrapping the card
 
         if (status === "unauthenticated") {
             router.push(`/login`);
+            return;
+        }
+
+        if (product.hasVariants) {
+            router.push(`/products/${product.slug}`);
             return;
         }
 

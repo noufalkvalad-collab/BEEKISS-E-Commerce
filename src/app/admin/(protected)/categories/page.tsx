@@ -130,6 +130,8 @@ export default function CategoriesPage() {
                                     <input
                                         type="text"
                                         required
+                                        minLength={2}
+                                        maxLength={50}
                                         value={newCategory.name}
                                         onChange={(e) => {
                                             const name = e.target.value;
@@ -141,6 +143,7 @@ export default function CategoriesPage() {
                                         }}
                                         className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D4A017]/50"
                                         placeholder="e.g. Raw Honey"
+                                        title="Category name must be between 2 and 50 characters."
                                     />
                                 </div>
                                 <div>
@@ -148,16 +151,19 @@ export default function CategoriesPage() {
                                     <input
                                         type="text"
                                         required
+                                        pattern="^[a-z0-9]+(?:-[a-z0-9]+)*$"
                                         value={newCategory.slug}
                                         onChange={(e) => setNewCategory({ ...newCategory, slug: e.target.value })}
                                         className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D4A017]/50"
                                         placeholder="e.g. raw-honey"
+                                        title="Slug can only contain lowercase letters, numbers, and hyphens."
                                     />
                                 </div>
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
                                     <textarea
                                         value={newCategory.description}
+                                        maxLength={500}
                                         onChange={(e) => setNewCategory({ ...newCategory, description: e.target.value })}
                                         className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D4A017]/50 min-h-[100px]"
                                         placeholder="Category description..."

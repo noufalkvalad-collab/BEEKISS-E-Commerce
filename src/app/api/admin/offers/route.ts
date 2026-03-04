@@ -1,8 +1,12 @@
 import { NextResponse } from "next/server";
 import dbConnect from "@/lib/db/mongodb";
 import Offer from "@/lib/models/Offer";
+import Category from "@/lib/models/Category"; // Ensure registered for populate
+import Product from "@/lib/models/Product"; // Ensure registered for populate
 import { verifyAdminToken } from "@/lib/auth/adminJwt";
 import { cookies } from "next/headers";
+
+export const dynamic = 'force-dynamic';
 
 async function getAdminPayload() {
     const cookieStore = await cookies();
@@ -19,7 +23,10 @@ export async function GET() {
         await dbConnect();
 
         // Fetch all offers, active ones ending soonest first, then inactive ones
-        const offers = await Offer.find().sort({ isActive: -1, validUntil: 1 });
+        const offers = await Offer.find()
+            .populate('applicableCategories', 'name')
+            .populate('applicableProducts', 'name')
+            .sort({ isActive: -1, validUntil: 1 });
 
         return NextResponse.json(offers);
     } catch (error) {
@@ -37,20 +44,27 @@ export async function POST(req: Request) {
         const body = await req.json();
 
         // Validate required fields
-        if (!body.title || !body.discountPercentage || !body.validUntil) {
-            return NextResponse.json({ error: "Title, Discount Percentage, and Expiration Date are required" }, { status: 400 });
+        if (!body.title || !body.discountPercentage || !body.validUntil || !body.code || !body.type) {
+            return NextResponse.json({ error: "Title, Code, Type, Discount Percentage, and Expiration Date are required" }, { status: 400 });
         }
 
         const newOffer = await Offer.create({
             title: body.title,
             description: body.description,
+            code: body.code.toUpperCase(),
+            type: body.type,
             discountPercentage: Number(body.discountPercentage),
+            applicableCategories: body.applicableCategories || [],
+            applicableProducts: body.applicableProducts || [],
             validUntil: new Date(body.validUntil),
             isActive: body.isActive ?? true,
         });
 
         return NextResponse.json(newOffer, { status: 201 });
-    } catch (error) {
+    } catch (error: any) {
+        if (error.code === 11000) {
+            return NextResponse.json({ error: "An offer with this code already exists" }, { status: 400 });
+        }
         return NextResponse.json({ error: "Failed to create offer" }, { status: 500 });
     }
 }

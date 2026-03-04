@@ -218,6 +218,11 @@ export default function ProductsClient({ products, categories }: { products: any
                                             {product.badge}
                                         </span>
                                     )}
+                                    {product.offer && (
+                                        <span className={"absolute left-4 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded z-10 shadow " + (product.badge ? "top-12" : "top-4")}>
+                                            {product.offer.discountPercentage}% OFF
+                                        </span>
+                                    )}
                                     {/* Hover Overlay */}
                                     <div className="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                                     <div className="absolute top-4 right-4 z-20" onClick={(e) => e.preventDefault()}>
@@ -229,8 +234,11 @@ export default function ProductsClient({ products, categories }: { products: any
                                     {product.name}
                                 </h3>
                                 <p className="text-sm text-gray-500 mb-2">{product.category}</p>
-                                <p className="font-medium text-forest-green mt-auto">
-                                    {product.hasVariants ? "From " : ""}₹{product.price.toLocaleString('en-IN')}
+                                <p className="font-medium text-forest-green mt-auto flex items-center gap-2">
+                                    <span>{product.hasVariants ? "From " : ""}₹{(product.offer ? (product.price - (product.price * (product.offer.discountPercentage / 100))) : product.price).toLocaleString('en-IN')}</span>
+                                    {product.offer && (
+                                        <span className="text-xs text-gray-400 line-through">₹{product.price.toLocaleString('en-IN')}</span>
+                                    )}
                                 </p>
                             </Link>
                         ))}

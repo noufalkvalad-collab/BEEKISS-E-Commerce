@@ -12,6 +12,8 @@ export interface IOrder extends Document {
     userEmail: string;
     items: IOrderItem[];
     totalAmount: number;
+    promoCode?: string;
+    discountAmount?: number;
     address: {
         name: string;
         houseName: string;
@@ -46,6 +48,13 @@ const OrderSchema = new Schema<IOrder>(
         totalAmount: {
             type: Number,
             required: true,
+            min: 0,
+        },
+        promoCode: {
+            type: String,
+        },
+        discountAmount: {
+            type: Number,
             min: 0,
         },
         address: {

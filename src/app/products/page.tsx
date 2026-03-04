@@ -4,10 +4,12 @@ import dbConnect from "@/lib/db/mongodb";
 import Category from "@/lib/models/Category";
 import Product from "@/lib/models/Product";
 import ProductsClient from "./ProductsClient";
+import { applyActiveOffers } from "@/lib/utils/offerHelper";
 
 export default async function ProductsPage() {
     await dbConnect();
-    const dbProducts = await Product.find({ isActive: true }).populate("category", "name slug").sort({ createdAt: -1 }).lean();
+    const dbProductsBase = await Product.find({ isActive: true }).populate("category", "name slug").sort({ createdAt: -1 }).lean();
+    const dbProducts = await applyActiveOffers(dbProductsBase);
 
     // Map to the format expected by the UI
     const products = dbProducts.map((p: any) => ({
@@ -18,6 +20,7 @@ export default async function ProductsPage() {
         price: p.price,
         image: p.images && p.images.length > 0 ? p.images[0] : "/honey.jpg",
         badge: p.badge || null,
+        offer: p.offer || null,
     }));
 
     const dbCategories = await Category.find({}).sort({ name: 1 }).lean();

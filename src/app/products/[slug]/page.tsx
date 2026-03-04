@@ -142,6 +142,11 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ slug:
                                     {productData.badge}
                                 </span>
                             )}
+                            {productData.offer && (
+                                <span className="bg-red-500 text-white text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full shadow-sm z-10">
+                                    {productData.offer.discountPercentage}% OFF
+                                </span>
+                            )}
                         </div>
                     </div>
 
@@ -173,9 +178,18 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ slug:
                         </div>
 
                         <p className="text-3xl font-medium text-forest-green mb-8 flex items-baseline gap-4">
-                            ₹{(selectedVariant?.price ?? productData.price ?? 0).toLocaleString('en-IN')}
-                            {productData.compareAtPrice && (
-                                <span className="text-lg text-gray-400 line-through">₹{productData.compareAtPrice.toLocaleString('en-IN')}</span>
+                            ₹{(productData.offer
+                                ? ((selectedVariant?.price ?? productData.price) * (1 - (productData.offer.discountPercentage / 100)))
+                                : (selectedVariant?.price ?? productData.price ?? 0)).toLocaleString('en-IN')
+                            }
+                            {(productData.offer || productData.compareAtPrice) && (
+                                <span className="text-lg text-gray-400 line-through">
+                                    ₹{
+                                        productData.offer
+                                            ? (selectedVariant?.price ?? productData.price).toLocaleString('en-IN')
+                                            : productData.compareAtPrice.toLocaleString('en-IN')
+                                    }
+                                </span>
                             )}
                         </p>
 
@@ -313,7 +327,10 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ slug:
             <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 p-3 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] md:hidden z-40 flex items-center justify-between gap-3">
                 <div className="flex flex-col">
                     <span className="font-semibold text-gray-900 truncate max-w-[150px] text-sm">{productData.name} - {selectedVariant ? selectedVariant.weight : ""}</span>
-                    <span className="text-forest-green font-medium text-xs">₹{(selectedVariant?.price ?? productData.price ?? 0).toLocaleString('en-IN')}</span>
+                    <span className="text-forest-green font-medium text-xs flex items-center gap-1.5">
+                        ₹{(productData.offer ? ((selectedVariant?.price ?? productData.price) * (1 - (productData.offer.discountPercentage / 100))) : (selectedVariant?.price ?? productData.price ?? 0)).toLocaleString('en-IN')}
+                        {productData.offer && <span className="text-gray-400 line-through text-[10px]">₹{(selectedVariant?.price ?? productData.price).toLocaleString('en-IN')}</span>}
+                    </span>
                 </div>
                 <button
                     onClick={handleAddToCart}

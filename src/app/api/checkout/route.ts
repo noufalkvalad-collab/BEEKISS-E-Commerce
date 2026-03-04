@@ -4,6 +4,7 @@ import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import dbConnect from "@/lib/db/mongodb";
 import Order from "@/lib/models/Order";
 import Product from "@/lib/models/Product";
+import Offer from "@/lib/models/Offer";
 
 export async function POST(request: Request) {
     try {
@@ -14,7 +15,7 @@ export async function POST(request: Request) {
         }
 
         const body = await request.json();
-        const { items, address, paymentMethod } = body;
+        const { items, address, paymentMethod, promoCode } = body;
 
         if (!items || !Array.isArray(items) || items.length === 0) {
             return NextResponse.json({ success: false, error: "Invalid cart data" }, { status: 400 });
@@ -65,11 +66,58 @@ export async function POST(request: Request) {
             };
         });
 
-        // 2. Create the order in MongoDB
+        // 2. Validate and apply promo code securely
+        let totalDiscount = 0;
+        let appliedPromoCode = "";
+
+        if (promoCode) {
+            const offer = await Offer.findOne({
+                code: promoCode.toUpperCase(),
+                isActive: true
+            });
+
+            if (offer && new Date(offer.validUntil) >= new Date()) {
+                let applicableItemsFound = false;
+
+                for (const item of processedItems) {
+                    const product = dbProducts.find((p: any) => p._id.toString() === item.productId);
+                    if (!product) continue;
+
+                    let isApplicable = false;
+
+                    if (offer.type === 'GLOBAL') {
+                        isApplicable = true;
+                    } else if (offer.type === 'CATEGORY') {
+                        isApplicable = offer.applicableCategories?.some(
+                            (catId: any) => catId.toString() === product.category?.toString()
+                        ) || false;
+                    } else if (offer.type === 'PRODUCT') {
+                        isApplicable = offer.applicableProducts?.some(
+                            (prodId: any) => prodId.toString() === product._id.toString()
+                        ) || false;
+                    }
+
+                    if (isApplicable) {
+                        applicableItemsFound = true;
+                        totalDiscount += (item.price * item.quantity) * (offer.discountPercentage / 100);
+                    }
+                }
+
+                if (applicableItemsFound) {
+                    appliedPromoCode = offer.code;
+                }
+            }
+        }
+
+        const finalTotalAmount = Math.max(0, calculatedTotal - totalDiscount);
+
+        // 3. Create the order in MongoDB
         const newOrder = await Order.create({
             userEmail: session.user.email,
             items: processedItems,
-            totalAmount: calculatedTotal,
+            totalAmount: finalTotalAmount,
+            promoCode: appliedPromoCode || undefined,
+            discountAmount: totalDiscount > 0 ? totalDiscount : undefined,
             address: {
                 name: address.name,
                 houseName: address.houseName,

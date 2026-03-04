@@ -26,7 +26,11 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
             {
                 title: body.title,
                 description: body.description,
+                code: body.code?.toUpperCase(),
+                type: body.type,
                 discountPercentage: body.discountPercentage !== undefined ? Number(body.discountPercentage) : undefined,
+                applicableCategories: body.applicableCategories,
+                applicableProducts: body.applicableProducts,
                 validUntil: body.validUntil ? new Date(body.validUntil) : undefined,
                 isActive: body.isActive,
             },
@@ -38,7 +42,10 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
         }
 
         return NextResponse.json(updatedOffer);
-    } catch (error) {
+    } catch (error: any) {
+        if (error.code === 11000) {
+            return NextResponse.json({ error: "An offer with this code already exists" }, { status: 400 });
+        }
         return NextResponse.json({ error: "Failed to update offer" }, { status: 500 });
     }
 }

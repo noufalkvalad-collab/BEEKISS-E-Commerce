@@ -16,14 +16,20 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ slug:
     const resolvedParams = use(params);
     const slug = resolvedParams.slug;
     const [productData, setProductData] = useState<any>(null);
+    const [selectedVariant, setSelectedVariant] = useState<any>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [quantity, setQuantity] = useState(1);
-    const [size, setSize] = useState("");
     const [recommended, setRecommended] = useState<any[]>([]);
     const [isProcessing, setIsProcessing] = useState(false);
     const addItemToCart = useCartStore((state) => state.addItem);
     const { hasItem, addItem: addWishlist, removeItem: removeWishlist } = useWishlistStore();
-    const isWishlisted = productData ? hasItem(productData._id) : false;
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
+
+    const isWishlisted = mounted && productData ? hasItem(productData._id) : false;
     const { status } = useSession();
     const router = useRouter();
 
@@ -32,8 +38,12 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ slug:
             .then(res => res.json())
             .then(data => {
                 setProductData(data);
-                if (data.unitQuantity) {
-                    setSize(data.unitQuantity);
+                if (data.variants && data.variants.length > 0) {
+                    setSelectedVariant(data.variants[0]);
+                } else if (data.unitQuantity) {
+                    setSelectedVariant({ weight: data.unitQuantity, price: data.price, stock: data.stock });
+                } else {
+                    setSelectedVariant({ weight: "Standard", price: data.price, stock: data.stock });
                 }
                 setIsLoading(false);
             })
@@ -59,10 +69,10 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ slug:
         addItemToCart({
             id: productData.id || productData._id,
             name: productData.name,
-            price: productData.price,
+            price: selectedVariant ? selectedVariant.price : productData.price,
             image: productData.images?.[0] || "/honey.jpg",
             quantity,
-            size: size || (productData.unitQuantity ? productData.unitQuantity : "Standard")
+            size: selectedVariant ? selectedVariant.weight : "Standard"
         });
 
         router.push("/cart");
@@ -163,7 +173,7 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ slug:
                         </div>
 
                         <p className="text-3xl font-medium text-forest-green mb-8 flex items-baseline gap-4">
-                            ₹{productData.price.toLocaleString('en-IN')}
+                            ₹{(selectedVariant?.price ?? productData.price ?? 0).toLocaleString('en-IN')}
                             {productData.compareAtPrice && (
                                 <span className="text-lg text-gray-400 line-through">₹{productData.compareAtPrice.toLocaleString('en-IN')}</span>
                             )}
@@ -176,17 +186,32 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ slug:
                         {/* Weight Options */}
                         <div className="mb-8">
                             <h3 className="font-medium text-forest-green mb-3">Sizes Available</h3>
-                            <div className="flex gap-4">
-                                {productData.unitQuantity ? (
-                                    <span className="px-6 py-2 border-2 font-medium rounded transition-colors border-honey-gold text-forest-green">
-                                        {productData.unitQuantity}
-                                    </span>
+                            <div className="flex flex-wrap gap-3">
+                                {productData.variants && productData.variants.length > 0 ? (
+                                    productData.variants.map((v: any) => (
+                                        <button
+                                            key={v._id || v.weight}
+                                            onClick={() => setSelectedVariant(v)}
+                                            className={`px-5 py-2.5 border-2 font-medium rounded-lg transition-all ${selectedVariant?.weight === v.weight
+                                                ? "border-[#D4A017] bg-[#D4A017]/10 text-[#0F2E1D]"
+                                                : "border-gray-200 text-gray-console hover:border-[#D4A017]/50 hover:bg-gray-50"
+                                                }`}
+                                        >
+                                            {v.weight}
+                                        </button>
+                                    ))
                                 ) : (
                                     <span className="px-6 py-2 border-2 font-medium rounded transition-colors border-honey-gold text-forest-green">
-                                        Standard Size
+                                        {productData.unitQuantity || "Standard Size"}
                                     </span>
                                 )}
                             </div>
+                            {selectedVariant && selectedVariant.stock <= 5 && selectedVariant.stock > 0 && (
+                                <p className="text-sm text-amber-600 mt-2 font-medium">Only {selectedVariant.stock} left in stock!</p>
+                            )}
+                            {selectedVariant && selectedVariant.stock === 0 && (
+                                <p className="text-sm text-red-500 mt-2 font-medium">Out of stock in this size.</p>
+                            )}
                         </div>
 
                         {/* Quantity & Add to Cart */}
@@ -213,9 +238,13 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ slug:
                             </div>
                             <button
                                 onClick={handleAddToCart}
-                                className="px-10 bg-[#0F2E1D] text-white font-semibold rounded hover:bg-[#0F2E1D]/90 transition-colors shadow-sm py-2 text-sm"
+                                disabled={selectedVariant && selectedVariant.stock === 0}
+                                className={`px-10 font-semibold rounded transition-colors shadow-sm py-2 text-sm ${selectedVariant && selectedVariant.stock === 0
+                                    ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                                    : "bg-[#0F2E1D] text-white hover:bg-[#0F2E1D]/90"
+                                    }`}
                             >
-                                Add to Cart
+                                {selectedVariant && selectedVariant.stock === 0 ? "Out of Stock" : "Add to Cart"}
                             </button>
                         </div>
 
@@ -283,14 +312,18 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ slug:
             {/* Sticky Mobile Add To Cart Bar */}
             <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 p-3 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] md:hidden z-40 flex items-center justify-between gap-3">
                 <div className="flex flex-col">
-                    <span className="font-semibold text-gray-900 truncate max-w-[150px] text-sm">{productData.name}</span>
-                    <span className="text-forest-green font-medium text-xs">₹{productData.price.toLocaleString('en-IN')}</span>
+                    <span className="font-semibold text-gray-900 truncate max-w-[150px] text-sm">{productData.name} - {selectedVariant ? selectedVariant.weight : ""}</span>
+                    <span className="text-forest-green font-medium text-xs">₹{(selectedVariant?.price ?? productData.price ?? 0).toLocaleString('en-IN')}</span>
                 </div>
                 <button
                     onClick={handleAddToCart}
-                    className="flex-1 bg-[#0F2E1D] text-white font-semibold py-2 px-4 rounded text-sm hover:bg-[#0F2E1D]/90 transition-colors shadow-sm whitespace-nowrap text-center max-w-[80px]"
+                    disabled={selectedVariant && selectedVariant.stock === 0}
+                    className={`flex-1 font-semibold py-2 px-4 rounded text-sm transition-colors shadow-sm whitespace-nowrap text-center max-w-[100px] ${selectedVariant && selectedVariant.stock === 0
+                        ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                        : "bg-[#0F2E1D] text-white hover:bg-[#0F2E1D]/90"
+                        }`}
                 >
-                    Add to Cart
+                    {selectedVariant && selectedVariant.stock === 0 ? "Sold Out" : "Add to Cart"}
                 </button>
             </div>
 

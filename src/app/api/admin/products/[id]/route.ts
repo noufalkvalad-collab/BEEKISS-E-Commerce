@@ -37,12 +37,10 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
                 name: body.name,
                 slug: body.slug,
                 description: body.description,
-                price: body.price !== undefined ? Number(body.price) : undefined,
                 category: body.category,
                 images: body.images,
                 badge: body.badge,
-                unitQuantity: body.unitQuantity,
-                stock: body.stock !== undefined ? Number(body.stock) : undefined,
+                variants: body.variants,
                 isActive: body.isActive,
             },
             { new: true, runValidators: true }

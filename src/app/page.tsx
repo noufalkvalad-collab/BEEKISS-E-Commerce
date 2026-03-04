@@ -11,13 +11,20 @@ export default async function Home() {
   // Fetch up to 3 featured / recently added active products
   const dbProducts = await Product.find({ isActive: true }).sort({ createdAt: -1 }).limit(3).lean();
 
-  const featuredProducts = dbProducts.map((p: any) => ({
-    id: p._id.toString(),
-    name: p.name,
-    slug: p.slug,
-    price: p.price,
-    image: p.images && p.images.length > 0 ? p.images[0] : "/honey.jpg",
-  }));
+  const featuredProducts = dbProducts.map((p: any) => {
+    let minPrice = p.price || 0;
+    if (p.variants && p.variants.length > 0) {
+      minPrice = Math.min(...p.variants.map((v: any) => v.price));
+    }
+    return {
+      id: p._id.toString(),
+      name: p.name,
+      slug: p.slug,
+      price: minPrice,
+      hasVariants: p.variants && p.variants.length > 0,
+      image: p.images && p.images.length > 0 ? p.images[0] : "/honey.jpg",
+    };
+  });
 
   return (
     <main className="flex min-h-screen flex-col bg-[#FDFDF9] overflow-x-hidden">
@@ -151,7 +158,9 @@ export default async function Home() {
                   <div className="p-8 flex flex-col flex-1 text-center bg-white justify-between">
                     <div>
                       <h3 className="text-2xl font-semibold mb-2 font-serif text-[#0F2E1D]">{prod.name}</h3>
-                      <p className="text-[#D4A017] mb-6 font-medium text-lg">₹{prod.price.toLocaleString('en-IN')}</p>
+                      <p className="text-[#D4A017] mb-6 font-medium text-lg">
+                        {prod.hasVariants ? "From " : ""}₹{prod.price.toLocaleString('en-IN')}
+                      </p>
                     </div>
                     <div>
                       <Link href={`/products/${prod.slug}`} suppressHydrationWarning className="w-full py-3 bg-[#D4A017] text-[#0F2E1D] font-semibold rounded-full hover:bg-white hover:text-[#D4A017] hover:border hover:border-[#D4A017] transition-all duration-300 shadow-md inline-block text-center">

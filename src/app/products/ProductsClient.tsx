@@ -229,7 +229,9 @@ export default function ProductsClient({ products, categories }: { products: any
                                     {product.name}
                                 </h3>
                                 <p className="text-sm text-gray-500 mb-2">{product.category}</p>
-                                <p className="font-medium text-forest-green mt-auto">₹{product.price.toLocaleString('en-IN')}</p>
+                                <p className="font-medium text-forest-green mt-auto">
+                                    {product.hasVariants ? "From " : ""}₹{product.price.toLocaleString('en-IN')}
+                                </p>
                             </Link>
                         ))}
                     </div>

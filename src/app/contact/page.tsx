@@ -1,12 +1,27 @@
-import type { Metadata } from "next";
-import { MapPin, Phone, Mail, Clock, Instagram, Facebook, Send } from "lucide-react";
+"use client";
 
-export const metadata: Metadata = {
-    title: "Contact | Bee Kiss",
-    description: "We would love to hear from you. Whether it's a question, partnership, or wholesale inquiry.",
-};
+import { MapPin, Phone, Mail, Clock, Instagram, Facebook, Send, Loader2 } from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
 
 export default function ContactPage() {
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setIsSubmitting(true);
+        try {
+            // Simulate 1.5s sending time
+            await new Promise((resolve) => setTimeout(resolve, 1500));
+            toast.success("Message sent perfectly! Our bees will buzz back soon.");
+            (e.target as HTMLFormElement).reset();
+        } catch (error) {
+            toast.error("Failed to send massage. Please try again.");
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
     return (
         <main className="min-h-screen bg-[#FDFDF9] overflow-hidden">
             {/* Hero Section */}
@@ -35,15 +50,18 @@ export default function ContactPage() {
                     {/* Left Side: Contact Form */}
                     <div className="bg-white p-8 md:p-12 rounded-3xl shadow-[0_15px_50px_-15px_rgba(0,0,0,0.1)] border border-[#0F2E1D]/5 transition-all duration-1000">
                         <h2 className="text-3xl font-serif font-bold text-[#0F2E1D] mb-8">Send us a Message</h2>
-                        <form className="space-y-6">
+                        <form className="space-y-6" onSubmit={handleSubmit}>
                             <div className="space-y-2">
                                 <label htmlFor="name" className="text-sm font-medium text-gray-700 font-sans uppercase tracking-wider">Full Name</label>
                                 <input
                                     type="text"
                                     id="name"
+                                    minLength={2}
+                                    maxLength={50}
                                     className="w-full border-b-2 border-gray-200 py-3 bg-transparent text-[#0F2E1D] font-medium focus:outline-none focus:border-[#D4A017] transition-colors"
                                     placeholder="John Doe"
                                     required
+                                    title="Please enter your full name (2-50 characters)"
                                 />
                             </div>
 
@@ -59,12 +77,14 @@ export default function ContactPage() {
                             </div>
 
                             <div className="space-y-2">
-                                <label htmlFor="phone" className="text-sm font-medium text-gray-700 font-sans uppercase tracking-wider">Phone Number</label>
+                                <label htmlFor="phone" className="text-sm font-medium text-gray-700 font-sans uppercase tracking-wider">Phone Number <span className="text-xs text-gray-400 lowercase font-normal">(Optional)</span></label>
                                 <input
                                     type="tel"
                                     id="phone"
+                                    pattern="^\+?[0-9\s\-\(\)]{7,15}$"
                                     className="w-full border-b-2 border-gray-200 py-3 bg-transparent text-[#0F2E1D] font-medium focus:outline-none focus:border-[#D4A017] transition-colors"
                                     placeholder="+91 98765 43210"
+                                    title="Please enter a valid phone number format"
                                 />
                             </div>
 
@@ -73,18 +93,31 @@ export default function ContactPage() {
                                 <textarea
                                     id="message"
                                     rows={4}
+                                    minLength={10}
+                                    maxLength={1000}
                                     className="w-full border-2 border-gray-200 rounded-xl p-4 bg-transparent text-[#0F2E1D] font-medium focus:outline-none focus:border-[#D4A017] transition-colors resize-none mt-2"
                                     placeholder="How can we help you?"
                                     required
+                                    title="Your message must be at least 10 characters long"
                                 ></textarea>
                             </div>
 
                             <button
                                 type="submit"
-                                className="w-full bg-[#D4A017] text-[#0F2E1D] font-bold py-4 rounded-xl flex items-center justify-center gap-2 hover:bg-[#b88a10] hover:shadow-lg hover:-translate-y-1 transition-all duration-300 font-sans text-lg mt-4"
+                                disabled={isSubmitting}
+                                className="w-full bg-[#D4A017] text-[#0F2E1D] font-bold py-4 rounded-xl flex items-center justify-center gap-2 hover:bg-[#b88a10] hover:shadow-lg hover:-translate-y-1 transition-all duration-300 font-sans text-lg mt-4 disabled:opacity-70 disabled:cursor-not-allowed disabled:hover:translate-y-0"
                             >
-                                <span>Send Message</span>
-                                <Send className="w-5 h-5" />
+                                {isSubmitting ? (
+                                    <>
+                                        <Loader2 className="w-5 h-5 animate-spin" />
+                                        <span>Sending...</span>
+                                    </>
+                                ) : (
+                                    <>
+                                        <span>Send Message</span>
+                                        <Send className="w-5 h-5" />
+                                    </>
+                                )}
                             </button>
                         </form>
                     </div>

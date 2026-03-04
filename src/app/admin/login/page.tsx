@@ -70,12 +70,15 @@ export default function AdminLoginPage() {
                 <form onSubmit={handleAdminLogin} className="space-y-4 mb-6">
                     <div>
                         <input
+                            id="email"
+                            name="email"
                             type="email"
-                            placeholder="Admin Email"
+                            required
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
-                            className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-[#D4A017] font-sans text-[#0F2E1D]"
-                            required
+                            className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#D4A017] transition-all"
+                            placeholder="admin@beekiss.com"
+                            title="Please enter a valid email address."
                         />
                     </div>
                     <div>

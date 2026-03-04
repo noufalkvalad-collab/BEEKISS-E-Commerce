@@ -151,7 +151,7 @@ export default function ProductsPage() {
                                 <div className="space-y-4">
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-1">Name *</label>
-                                        <input type="text" required value={newProduct.name}
+                                        <input type="text" required minLength={2} maxLength={100} value={newProduct.name}
                                             onChange={(e) => {
                                                 const name = e.target.value;
                                                 setNewProduct({
@@ -159,13 +159,15 @@ export default function ProductsPage() {
                                                     slug: name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '')
                                                 });
                                             }}
-                                            className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#D4A017]/50" placeholder="Product Name" />
+                                            className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#D4A017]/50" placeholder="Product Name"
+                                            title="Product name must be between 2 and 100 characters." />
                                     </div>
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-1">Slug *</label>
-                                        <input type="text" required value={newProduct.slug}
+                                        <input type="text" required pattern="^[a-z0-9]+(?:-[a-z0-9]+)*$" value={newProduct.slug}
                                             onChange={(e) => setNewProduct({ ...newProduct, slug: e.target.value })}
-                                            className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#D4A017]/50" placeholder="product-slug" />
+                                            className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#D4A017]/50" placeholder="product-slug"
+                                            title="Slug can only contain lowercase letters, numbers, and hyphens." />
                                     </div>
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-1">Category *</label>
@@ -202,20 +204,22 @@ export default function ProductsPage() {
                                                             setNewProduct({ ...newProduct, variants: newVariants });
                                                         }}
                                                         className="w-1/3 px-3 py-1.5 text-sm border border-gray-200 rounded focus:ring-1 focus:ring-[#D4A017]/50" />
-                                                    <input type="number" required min="0" step="0.01" placeholder="Variant Price ₹" value={variant.price}
+                                                    <input type="number" required min="0.01" step="0.01" placeholder="Variant Price ₹" value={variant.price}
                                                         onChange={(e) => {
                                                             const newVariants = [...newProduct.variants];
                                                             newVariants[index].price = e.target.value;
                                                             setNewProduct({ ...newProduct, variants: newVariants });
                                                         }}
-                                                        className="w-1/3 px-3 py-1.5 text-sm border border-gray-200 rounded focus:ring-1 focus:ring-[#D4A017]/50" />
-                                                    <input type="number" required min="0" placeholder="Variant Stock Qty" value={variant.stock}
+                                                        className="w-1/3 px-3 py-1.5 text-sm border border-gray-200 rounded focus:ring-1 focus:ring-[#D4A017]/50"
+                                                        title="Price must be greater than 0" />
+                                                    <input type="number" required min="0" step="1" placeholder="Variant Stock Qty" value={variant.stock}
                                                         onChange={(e) => {
                                                             const newVariants = [...newProduct.variants];
                                                             newVariants[index].stock = e.target.value;
                                                             setNewProduct({ ...newProduct, variants: newVariants });
                                                         }}
-                                                        className="w-1/4 px-3 py-1.5 text-sm border border-gray-200 rounded focus:ring-1 focus:ring-[#D4A017]/50" />
+                                                        className="w-1/4 px-3 py-1.5 text-sm border border-gray-200 rounded focus:ring-1 focus:ring-[#D4A017]/50"
+                                                        title="Stock must be 0 or greater" />
                                                     {newProduct.variants.length > 1 && (
                                                         <button type="button" onClick={() => {
                                                             const newVariants = newProduct.variants.filter((_, i) => i !== index);

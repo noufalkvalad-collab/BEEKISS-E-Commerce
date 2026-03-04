@@ -156,13 +156,15 @@ export default function OffersPage() {
                             <div className="grid grid-cols-2 gap-5">
                                 <div className="col-span-2 md:col-span-1">
                                     <label className="block text-sm font-medium text-gray-700 mb-1">Offer Title *</label>
-                                    <input type="text" required value={formData.title} onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                                        className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#D4A017]/50" placeholder="e.g. Summer Sale" />
+                                    <input type="text" required minLength={2} maxLength={50} value={formData.title} onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                                        className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#D4A017]/50" placeholder="e.g. Summer Sale"
+                                        title="Title must be between 2 and 50 characters." />
                                 </div>
                                 <div className="col-span-2 md:col-span-1">
                                     <label className="block text-sm font-medium text-gray-700 mb-1">Coupon Code *</label>
-                                    <input type="text" required value={formData.code} onChange={(e) => setFormData({ ...formData, code: e.target.value.toUpperCase() })}
-                                        className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#D4A017]/50 uppercase" placeholder="e.g. SUMMER20" />
+                                    <input type="text" required pattern="^[A-Z0-9]+$" minLength={3} maxLength={20} value={formData.code} onChange={(e) => setFormData({ ...formData, code: e.target.value.toUpperCase() })}
+                                        className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#D4A017]/50 uppercase" placeholder="e.g. SUMMER20"
+                                        title="Code must be 3-20 uppercase letters or numbers with no spaces." />
                                 </div>
                                 <div className="col-span-2 md:col-span-1">
                                     <label className="block text-sm font-medium text-gray-700 mb-1">Discount % *</label>
@@ -171,7 +173,7 @@ export default function OffersPage() {
                                 </div>
                                 <div className="col-span-2 md:col-span-1">
                                     <label className="block text-sm font-medium text-gray-700 mb-1">Valid Until *</label>
-                                    <input type="date" required value={formData.validUntil} onChange={(e) => setFormData({ ...formData, validUntil: e.target.value })}
+                                    <input type="date" required min={new Date().toISOString().split('T')[0]} value={formData.validUntil} onChange={(e) => setFormData({ ...formData, validUntil: e.target.value })}
                                         className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#D4A017]/50" />
                                 </div>
 
@@ -282,8 +284,8 @@ export default function OffersPage() {
                                             </td>
                                             <td className="px-6 py-4">
                                                 <span className={`inline-flex px-2 py-0.5 rounded textxs font-medium ${offer.type === 'GLOBAL' ? "bg-purple-50 text-purple-700" :
-                                                        offer.type === 'CATEGORY' ? "bg-blue-50 text-blue-700" :
-                                                            "bg-orange-50 text-orange-700"
+                                                    offer.type === 'CATEGORY' ? "bg-blue-50 text-blue-700" :
+                                                        "bg-orange-50 text-orange-700"
                                                     }`}>
                                                     {offer.type}
                                                 </span>

@@ -62,10 +62,13 @@ function AddAddressForm() {
                             <input
                                 required
                                 type="text"
+                                minLength={2}
+                                maxLength={50}
                                 value={address.name}
                                 onChange={e => setAddress({ ...address, name: e.target.value })}
                                 className="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:border-[#D4A017] focus:ring-1 focus:ring-[#D4A017]"
                                 placeholder="John Doe"
+                                title="Full Name must be between 2 and 50 characters."
                             />
                         </div>
 
@@ -74,10 +77,13 @@ function AddAddressForm() {
                             <input
                                 required
                                 type="text"
+                                minLength={4}
+                                maxLength={100}
                                 value={address.houseName}
                                 onChange={e => setAddress({ ...address, houseName: e.target.value })}
                                 className="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:border-[#D4A017] focus:ring-1 focus:ring-[#D4A017]"
                                 placeholder="123 Bee Hive Appts"
+                                title="Please enter a valid House Name / Flat No."
                             />
                         </div>
 
@@ -87,10 +93,12 @@ function AddAddressForm() {
                                 <input
                                     required
                                     type="tel"
+                                    pattern="^[0-9]{10}$"
                                     value={address.phone}
                                     onChange={e => setAddress({ ...address, phone: e.target.value })}
                                     className="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:border-[#D4A017] focus:ring-1 focus:ring-[#D4A017]"
-                                    placeholder="+91 9876543210"
+                                    placeholder="9876543210"
+                                    title="Please enter a valid 10-digit mobile number."
                                 />
                             </div>
                             <div>
@@ -98,10 +106,12 @@ function AddAddressForm() {
                                 <input
                                     required
                                     type="text"
+                                    pattern="^[1-9][0-9]{5}$"
                                     value={address.pincode}
                                     onChange={e => setAddress({ ...address, pincode: e.target.value })}
                                     className="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:border-[#D4A017] focus:ring-1 focus:ring-[#D4A017]"
                                     placeholder="682001"
+                                    title="Please enter a valid 6-digit Indian Pincode."
                                 />
                             </div>
                         </div>
@@ -112,6 +122,8 @@ function AddAddressForm() {
                                 <input
                                     required
                                     type="text"
+                                    minLength={2}
+                                    maxLength={50}
                                     value={address.district}
                                     onChange={e => setAddress({ ...address, district: e.target.value })}
                                     className="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:border-[#D4A017] focus:ring-1 focus:ring-[#D4A017]"
@@ -123,6 +135,8 @@ function AddAddressForm() {
                                 <input
                                     required
                                     type="text"
+                                    minLength={2}
+                                    maxLength={50}
                                     value={address.state}
                                     onChange={e => setAddress({ ...address, state: e.target.value })}
                                     className="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:border-[#D4A017] focus:ring-1 focus:ring-[#D4A017]"
@@ -135,6 +149,7 @@ function AddAddressForm() {
                             <label className="block text-sm font-medium text-gray-700 mb-1">Landmark (Optional)</label>
                             <input
                                 type="text"
+                                maxLength={100}
                                 value={address.landmark}
                                 onChange={e => setAddress({ ...address, landmark: e.target.value })}
                                 className="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:border-[#D4A017] focus:ring-1 focus:ring-[#D4A017]"

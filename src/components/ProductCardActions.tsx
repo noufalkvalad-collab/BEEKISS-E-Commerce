@@ -35,10 +35,14 @@ export default function ProductCardActions({ product, className = "" }: { produc
             return;
         }
 
+        const finalPrice = product.offer
+            ? product.price - (product.price * (product.offer.discountPercentage / 100))
+            : product.price;
+
         addItemToCart({
             id: product.id,
             name: product.name,
-            price: product.price,
+            price: finalPrice,
             image: product.image || "/honey.jpg",
             quantity: 1,
             size: "Standard"

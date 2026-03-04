@@ -14,6 +14,11 @@ export default function CartPage() {
     const { status } = useSession();
     const router = useRouter();
 
+    const [promoCode, setPromoCode] = useState("");
+    const [isValidatingCode, setIsValidatingCode] = useState(false);
+    const [promoError, setPromoError] = useState("");
+    const [discountInfo, setDiscountInfo] = useState<any>(null);
+
     useEffect(() => {
         setMounted(true);
     }, []);
@@ -31,6 +36,45 @@ export default function CartPage() {
     const subtotal = totalPrice();
     const shipping = subtotal > 999 ? 0 : 99;
     const total = subtotal + shipping;
+
+    const finalTotal = discountInfo
+        ? Math.max(shipping, total - discountInfo.discountAmount)
+        : total;
+
+    const applyPromoCode = async () => {
+        if (!promoCode.trim()) return;
+
+        setIsValidatingCode(true);
+        setPromoError("");
+        setDiscountInfo(null);
+
+        try {
+            const res = await fetch("/api/offers/validate", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ code: promoCode, items })
+            });
+
+            const data = await res.json();
+
+            if (data.success) {
+                setDiscountInfo(data);
+                setPromoCode(""); // Clear input on success
+            } else {
+                setPromoError(data.error || "Invalid promo code");
+            }
+        } catch (error) {
+            setPromoError("Failed to validate promo code. Please try again.");
+        } finally {
+            setIsValidatingCode(false);
+        }
+    };
+
+    const removePromoCode = () => {
+        setDiscountInfo(null);
+        setPromoCode("");
+        setPromoError("");
+    };
 
     if (items.length === 0) {
         return (
@@ -151,16 +195,55 @@ export default function CartPage() {
                                 )}
                             </div>
 
+                            {/* Promo Code Input */}
+                            <div className="mb-6 pt-4 border-t border-gray-200">
+                                <label className="block text-sm font-medium text-gray-700 mb-2">Have a Promo Code?</label>
+                                <div className="flex gap-2">
+                                    <input
+                                        type="text"
+                                        placeholder="Enter code"
+                                        value={promoCode}
+                                        onChange={(e) => setPromoCode(e.target.value)}
+                                        className="flex-1 px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#D4A017]/50 focus:outline-none uppercase"
+                                    />
+                                    <button
+                                        onClick={applyPromoCode}
+                                        disabled={isValidatingCode || !promoCode.trim()}
+                                        className="px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 disabled:bg-gray-400 transition-colors font-medium text-sm disabled:cursor-not-allowed flex items-center gap-2"
+                                    >
+                                        {isValidatingCode ? <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin tracking-tighter indent-[-9999px]">...</span> : "Apply"}
+                                    </button>
+                                </div>
+                                {promoError && <p className="text-red-500 text-xs mt-2 font-medium">{promoError}</p>}
+                                {discountInfo && (
+                                    <div className="mt-3 p-3 bg-green-50 border border-green-100 rounded-lg flex justify-between items-center animate-in fade-in zoom-in-95">
+                                        <div>
+                                            <p className="text-green-800 font-semibold text-sm">Code Applied ({discountInfo.code})</p>
+                                            <p className="text-green-600 text-xs">{discountInfo.offerTitle}</p>
+                                        </div>
+                                        <button onClick={removePromoCode} className="text-green-800 hover:text-red-500 transition-colors">
+                                            <Trash2 className="w-4 h-4" />
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+
                             <div className="border-t border-gray-200 pt-4 mb-8">
+                                {discountInfo && (
+                                    <div className="flex justify-between items-center mb-3">
+                                        <span className="font-medium text-green-700">Discount ({discountInfo.code})</span>
+                                        <span className="font-bold text-green-700">-₹{discountInfo.discountAmount.toLocaleString('en-IN')}</span>
+                                    </div>
+                                )}
                                 <div className="flex justify-between items-end">
                                     <span className="font-semibold text-gray-900">Total</span>
-                                    <span className="text-2xl font-bold text-forest-green">₹{total.toLocaleString('en-IN')}</span>
+                                    <span className="text-2xl font-bold text-forest-green">₹{finalTotal.toLocaleString('en-IN')}</span>
                                 </div>
                                 <p className="text-xs text-gray-500 text-right mt-1">Including GST</p>
                             </div>
 
                             <Link
-                                href="/checkout"
+                                href={`/checkout${discountInfo ? `?promo=${discountInfo.code}` : ''}`}
                                 className="w-full py-4 bg-forest-green text-white font-semibold rounded flex items-center justify-center gap-2 hover:bg-forest-green/90 transition-colors"
                             >
                                 Proceed to Checkout <ChevronRight className="w-5 h-5" />

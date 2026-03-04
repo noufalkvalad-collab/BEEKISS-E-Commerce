@@ -4,12 +4,14 @@ import { ArrowRight, Leaf, ShieldCheck, Droplets } from "lucide-react";
 import dbConnect from "@/lib/db/mongodb";
 import Product from "@/lib/models/Product";
 import ProductCardActions from "@/components/ProductCardActions";
+import { applyActiveOffers } from "@/lib/utils/offerHelper";
 
 export default async function Home() {
   await dbConnect();
 
   // Fetch up to 3 featured / recently added active products
-  const dbProducts = await Product.find({ isActive: true }).sort({ createdAt: -1 }).limit(3).lean();
+  const dbProductsBase = await Product.find({ isActive: true }).sort({ createdAt: -1 }).limit(3).lean();
+  const dbProducts = await applyActiveOffers(dbProductsBase);
 
   const featuredProducts = dbProducts.map((p: any) => {
     let minPrice = p.price || 0;
@@ -23,6 +25,7 @@ export default async function Home() {
       price: minPrice,
       hasVariants: p.variants && p.variants.length > 0,
       image: p.images && p.images.length > 0 ? p.images[0] : "/honey.jpg",
+      offer: p.offer || null,
     };
   });
 
@@ -142,7 +145,7 @@ export default async function Home() {
             {featuredProducts.length === 0 ? (
               <p className="text-gray-400 font-light col-span-3 text-center">More exquisite products arriving soon.</p>
             ) : (
-              featuredProducts.map((prod) => (
+              featuredProducts.map((prod: any) => (
                 <div key={prod.id} className="bg-white rounded-2xl shadow-lg hover:-translate-y-2 transition-transform duration-300 overflow-hidden flex flex-col group">
                   <div className="relative aspect-[4/3] w-full bg-gray-100 p-8 flex items-center justify-center border-b border-gray-100">
                     <Image
@@ -151,6 +154,11 @@ export default async function Home() {
                       fill
                       className="object-cover group-hover:scale-105 transition-transform duration-500"
                     />
+                    {prod.offer && (
+                      <span className="absolute top-4 left-4 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded z-10 shadow">
+                        {prod.offer.discountPercentage}% OFF
+                      </span>
+                    )}
                     <div className="absolute top-4 right-4 z-20">
                       <ProductCardActions product={prod} />
                     </div>
@@ -158,8 +166,11 @@ export default async function Home() {
                   <div className="p-8 flex flex-col flex-1 text-center bg-white justify-between">
                     <div>
                       <h3 className="text-2xl font-semibold mb-2 font-serif text-[#0F2E1D]">{prod.name}</h3>
-                      <p className="text-[#D4A017] mb-6 font-medium text-lg">
-                        {prod.hasVariants ? "From " : ""}₹{prod.price.toLocaleString('en-IN')}
+                      <p className="text-[#D4A017] mb-6 font-medium text-lg flex items-center justify-center gap-2">
+                        <span>{prod.hasVariants ? "From " : ""}₹{(prod.offer ? (prod.price - (prod.price * (prod.offer.discountPercentage / 100))) : prod.price).toLocaleString('en-IN')}</span>
+                        {prod.offer && (
+                          <span className="text-sm text-gray-400 line-through">₹{prod.price.toLocaleString('en-IN')}</span>
+                        )}
                       </p>
                     </div>
                     <div>

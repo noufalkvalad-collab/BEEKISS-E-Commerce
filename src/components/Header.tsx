@@ -73,7 +73,7 @@ export default function Header() {
                         <Search className="w-5 h-5" />
                     </button>
 
-                    <Link href="/login" className="text-[#D4A017] hover:text-white transition-colors flex items-center" suppressHydrationWarning>
+                    <Link href={status === 'authenticated' ? "/user/orders" : "/login"} className="text-[#D4A017] hover:text-white transition-colors flex items-center" suppressHydrationWarning>
                         {status === 'authenticated' && session?.user?.image ? (
                             <Image
                                 src={session.user.image}

@@ -6,6 +6,7 @@ export interface IOrderItem {
     price: number;
     quantity: number;
     size?: string;
+    image?: string;
 }
 
 export interface IOrder extends Document {
@@ -14,6 +15,7 @@ export interface IOrder extends Document {
     totalAmount: number;
     promoCode?: string;
     discountAmount?: number;
+    cancellationReason?: string;
     address: {
         name: string;
         houseName: string;
@@ -35,6 +37,7 @@ const OrderItemSchema = new Schema<IOrderItem>({
     price: { type: Number, required: true },
     quantity: { type: Number, required: true, min: 1 },
     size: { type: String },
+    image: { type: String },
 });
 
 const OrderSchema = new Schema<IOrder>(
@@ -56,6 +59,9 @@ const OrderSchema = new Schema<IOrder>(
         discountAmount: {
             type: Number,
             min: 0,
+        },
+        cancellationReason: {
+            type: String,
         },
         address: {
             name: { type: String, required: true },

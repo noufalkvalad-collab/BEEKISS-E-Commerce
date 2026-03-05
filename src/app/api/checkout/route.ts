@@ -62,7 +62,8 @@ export async function POST(request: Request) {
                 name: item.name,
                 price: serverPrice,
                 quantity: item.quantity,
-                size: item.size
+                size: item.size,
+                image: product.images && product.images.length > 0 ? product.images[0] : ""
             };
         });
 

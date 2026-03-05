@@ -266,7 +266,12 @@ export default function CategoriesPage() {
                         <tbody className="divide-y divide-gray-100">
                             {isLoading ? (
                                 <tr>
-                                    <td colSpan={4} className="px-6 py-12 text-center text-gray-400">Loading categories...</td>
+                                    <td colSpan={4} className="px-6 py-12 text-center text-gray-400">
+                                        <div className="flex flex-col items-center justify-center">
+                                            <Loader2 className="w-8 h-8 animate-spin text-[#D4A017] mb-2" />
+                                            <p className="animate-pulse">Loading categories...</p>
+                                        </div>
+                                    </td>
                                 </tr>
                             ) : categories.length === 0 ? (
                                 <tr>

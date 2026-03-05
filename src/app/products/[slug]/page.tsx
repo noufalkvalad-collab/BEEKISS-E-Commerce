@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { ChevronRight, Star, Truck, ShieldCheck, Leaf, Heart } from "lucide-react";
+import { ChevronRight, Star, Truck, ShieldCheck, Leaf, Heart, Loader2 } from "lucide-react";
 import { useCartStore } from "@/lib/store/useCartStore";
 import { useWishlistStore } from "@/lib/store/useWishlistStore";
 import ImageZoom from "@/components/ImageZoom";
@@ -108,7 +108,12 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ slug:
     };
 
     if (isLoading) {
-        return <div className="min-h-screen flex items-center justify-center pt-24 pb-24 text-forest-green">Loading product...</div>;
+        return (
+            <div className="min-h-screen flex flex-col items-center justify-center pt-24 pb-24 text-forest-green">
+                <Loader2 className="w-10 h-10 animate-spin mb-4 text-[#D4A017]" />
+                <p className="text-gray-500 font-medium animate-pulse">Loading product...</p>
+            </div>
+        );
     }
 
     if (!productData || productData.error) {

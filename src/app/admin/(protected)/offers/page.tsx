@@ -301,7 +301,7 @@ export default function OffersPage() {
                                                 <div className="text-xs font-mono text-gray-500 mt-0.5">{offer.code}</div>
                                             </td>
                                             <td className="px-6 py-4">
-                                                <span className={`inline-flex px-2 py-0.5 rounded textxs font-medium ${offer.type === 'GLOBAL' ? "bg-purple-50 text-purple-700" :
+                                                <span className={`inline-flex px-2 py-0.5 rounded text-xs font-medium ${offer.type === 'GLOBAL' ? "bg-purple-50 text-purple-700" :
                                                     offer.type === 'CATEGORY' ? "bg-blue-50 text-blue-700" :
                                                         "bg-orange-50 text-orange-700"
                                                     }`}>

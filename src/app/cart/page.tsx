@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useCartStore } from "@/lib/store/useCartStore";
-import { Trash2, ChevronRight, Lock } from "lucide-react";
+import { Trash2, ChevronRight, Lock, Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
@@ -30,7 +30,12 @@ export default function CartPage() {
     }, [mounted, status, router]);
 
     if (!mounted || status === "loading" || status === "unauthenticated") {
-        return <div className="min-h-[70vh] flex items-center justify-center">Loading cart...</div>;
+        return (
+            <div className="min-h-[70vh] flex flex-col items-center justify-center text-forest-green">
+                <Loader2 className="w-10 h-10 animate-spin mb-4 text-[#D4A017]" />
+                <p className="text-gray-500 font-medium animate-pulse">Loading cart...</p>
+            </div>
+        );
     }
 
     const subtotal = totalPrice();

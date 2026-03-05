@@ -21,7 +21,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     return (
         <div className="min-h-screen bg-[#FDFDF9] flex">
             {/* Admin Sidebar */}
-            <aside className="w-64 bg-[#0F2E1D] text-white hidden md:flex flex-col shadow-2xl z-20">
+            <aside className="w-64 bg-[#0F2E1D] text-white hidden md:flex flex-col shadow-2xl z-20 print:hidden">
                 <div className="p-6 border-b border-white/10 relative overflow-hidden">
                     <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[150%] rounded-full bg-gradient-to-r from-transparent to-white/5 blur-3xl transform rotate-12 pointer-events-none"></div>
 
@@ -70,7 +70,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             {/* Main Content Area */}
             <main className="flex-1 flex flex-col min-h-screen overflow-hidden relative">
                 {/* Mobile Header */}
-                <header className="md:hidden bg-[#0F2E1D] text-white p-4 flex justify-between items-center z-20">
+                <header className="md:hidden bg-[#0F2E1D] text-white p-4 flex justify-between items-center z-20 print:hidden">
                     <div className="flex items-center gap-2">
                         <div className="w-6 h-6 relative">
                             <div className="absolute inset-0 bg-[#D4A017] rotate-45 rounded-sm shadow-md" />

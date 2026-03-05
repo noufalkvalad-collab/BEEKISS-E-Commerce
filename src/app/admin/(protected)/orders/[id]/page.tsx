@@ -4,11 +4,13 @@ import { useState, useEffect, use } from "react";
 import Link from "next/link";
 import { ChevronLeft, Package, User, MapPin, CreditCard, Clock, Truck, FileText, Download, Loader2 } from "lucide-react";
 import Image from "next/image";
+import { toast } from "sonner";
 
 export default function OrderDetailsPage({ params }: { params: Promise<{ id: string }> }) {
     const resolvedParams = use(params);
     const [order, setOrder] = useState<any>(null);
     const [isLoading, setIsLoading] = useState(true);
+    const [isUpdating, setIsUpdating] = useState(false);
 
     useEffect(() => {
         const fetchOrder = async () => {
@@ -29,6 +31,29 @@ export default function OrderDetailsPage({ params }: { params: Promise<{ id: str
             fetchOrder();
         }
     }, [resolvedParams.id]);
+
+    const handleStatusChange = async (newStatus: string) => {
+        setIsUpdating(true);
+        try {
+            const res = await fetch(`/api/admin/orders/${order._id}`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ status: newStatus }),
+            });
+            const data = await res.json();
+            if (data.success) {
+                setOrder(data.order);
+                toast.success(`Order status updated to ${newStatus}`);
+            } else {
+                toast.error(data.error || "Failed to update status");
+            }
+        } catch (error) {
+            console.error("Failed to update status", error);
+            toast.error("Internal server error. Please try again.");
+        } finally {
+            setIsUpdating(false);
+        }
+    };
 
     if (isLoading) {
         return (
@@ -76,12 +101,26 @@ export default function OrderDetailsPage({ params }: { params: Promise<{ id: str
                 </div>
 
                 <div className="flex items-center gap-3">
-                    <button className="flex items-center gap-2 px-4 py-2 border rounded font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+                    <Link href={`/admin/orders/${order._id}/invoice`} className="flex items-center gap-2 px-4 py-2 border rounded font-medium text-gray-700 hover:bg-gray-50 transition-colors">
                         <FileText className="w-4 h-4" /> Invoice
-                    </button>
-                    <button className="bg-forest-green text-white px-4 py-2 rounded font-medium hover:bg-forest-green/90 transition-colors flex items-center gap-2">
-                        Update Status
-                    </button>
+                    </Link>
+                    <div className="relative">
+                        <select
+                            value={order.status}
+                            onChange={(e) => handleStatusChange(e.target.value)}
+                            disabled={isUpdating}
+                            className="bg-forest-green text-white px-4 py-2 rounded font-medium hover:bg-forest-green/90 transition-colors flex items-center gap-2 appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-honey-gold disabled:opacity-70 pr-10"
+                        >
+                            <option value="Pending">Pending</option>
+                            <option value="Processing">Processing</option>
+                            <option value="Shipped">Shipped</option>
+                            <option value="Delivered">Delivered</option>
+                            <option value="Cancelled">Cancelled</option>
+                        </select>
+                        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-white">
+                            <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" /></svg>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -100,8 +139,7 @@ export default function OrderDetailsPage({ params }: { params: Promise<{ id: str
                             {order.items.map((item: any) => (
                                 <div key={item._id || item.productId} className="flex gap-4 border-b border-gray-100 pb-4 last:border-0 last:pb-0">
                                     <div className="w-16 h-16 bg-gray-50 rounded-lg overflow-hidden border relative flex-shrink-0">
-                                        {/* Fallback to placeholder honey image since Order DB might not store the full image URL right now */}
-                                        <Image src="/honey.jpg" alt={item.name} fill className="object-cover" />
+                                        <Image src={item.image || "/honey.jpg"} alt={item.name} fill className="object-cover" />
                                     </div>
                                     <div className="flex-1">
                                         <h3 className="font-medium text-gray-900">{item.name}</h3>

@@ -11,6 +11,7 @@ import { useState, useEffect, use } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import ReviewSection from "@/components/ReviewSection";
 
 export default function ProductDetailsPage({ params }: { params: Promise<{ slug: string }> }) {
     const resolvedParams = use(params);
@@ -168,13 +169,16 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ slug:
                             </button>
                         </div>
 
-                        <div className="flex items-center gap-4 mb-6">
-                            <div className="flex text-honey-gold">
+                        {/* Rating Display */}
+                        <div className="flex items-center gap-4 mb-6" onClick={() => document.getElementById('reviews-section')?.scrollIntoView({ behavior: 'smooth' })}>
+                            <div className="flex text-honey-gold cursor-pointer hover:opacity-80 transition-opacity">
                                 {[1, 2, 3, 4, 5].map(star => (
-                                    <Star key={star} className="w-5 h-5 fill-current" />
+                                    <Star key={star} className={`w-5 h-5 ${productData.reviewsStats?.count > 0 && star <= (productData.reviewsStats?.average || 0) ? "fill-current" : "text-gray-200"}`} />
                                 ))}
                             </div>
-                            <span className="text-gray-500 text-sm font-light">(128 reviews)</span>
+                            <span className="text-gray-500 text-sm font-light hover:underline cursor-pointer">
+                                {productData.reviewsStats?.count > 0 ? `${productData.reviewsStats.average} (${productData.reviewsStats.count} reviews)` : "0.0 (0 reviews)"}
+                            </span>
                         </div>
 
                         <p className="text-3xl font-medium text-forest-green mb-8 flex items-baseline gap-4">
@@ -285,13 +289,16 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ slug:
                 <div className="mt-24">
                     <div className="flex border-b border-gray-200 gap-8">
                         <button className="pb-4 font-semibold text-forest-green border-b-2 border-honey-gold">Description</button>
-                        <button className="pb-4 font-medium text-gray-400 hover:text-forest-green transition-colors">Tasting Notes</button>
+                        <button onClick={() => document.getElementById('reviews-section')?.scrollIntoView({ behavior: 'smooth' })} className="pb-4 font-medium text-gray-400 hover:text-forest-green transition-colors">Customer Reviews</button>
                         <button className="pb-4 font-medium text-gray-400 hover:text-forest-green transition-colors">Shipping & Returns</button>
                     </div>
                     <div className="py-8 font-light text-gray-600 leading-relaxed max-w-3xl whitespace-pre-wrap">
                         {productData.description || "No detailed description is available for this product yet. It remains a mystery of the hive!"}
                     </div>
                 </div>
+
+                {/* Reviews Section Engine */}
+                <ReviewSection productSlug={slug} onStatsUpdate={(stats: any) => setProductData((prev: any) => ({ ...prev, reviewsStats: stats }))} />
 
                 {/* Recommended Products */}
                 {recommended.length > 0 && (

@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { Plus, Edit2, Trash2, Search, ArrowUpDown, X, Loader2, Image as ImageIcon } from "lucide-react";
 import { CldUploadWidget } from "next-cloudinary";
+import { toast } from "sonner";
 import type { ICategory } from "@/lib/models/Category";
 
 export default function CategoriesPage() {
@@ -47,17 +48,18 @@ export default function CategoriesPage() {
                 body: JSON.stringify(newCategory),
             });
             if (res.ok) {
+                toast.success(`Category ${editingId ? 'updated' : 'created'} successfully!`);
                 setIsAddModalOpen(false);
                 setEditingId(null);
                 setNewCategory({ name: "", slug: "", description: "", image: "", isActive: true });
                 fetchCategories(); // Refresh list
             } else {
                 const data = await res.json();
-                alert(data.error || `Failed to ${editingId ? 'update' : 'create'} category`);
+                toast.error(data.error || `Failed to ${editingId ? 'update' : 'create'} category`);
             }
         } catch (error) {
             console.error(`Error ${editingId ? 'updating' : 'creating'} category:`, error);
-            alert("An unexpected error occurred");
+            toast.error("An unexpected error occurred");
         } finally {
             setIsSubmitting(false);
         }
@@ -75,21 +77,31 @@ export default function CategoriesPage() {
         setIsAddModalOpen(true);
     };
 
-    const handleDeleteClick = async (id: string, name: string) => {
-        if (!confirm(`Are you sure you want to delete the "${name}" category? This action cannot be undone.`)) return;
-
-        try {
-            const res = await fetch(`/api/admin/categories/${id}`, { method: "DELETE" });
-            if (res.ok) {
-                fetchCategories();
-            } else {
-                const data = await res.json();
-                alert(data.error || "Failed to delete category");
+    const handleDeleteClick = (id: string, name: string) => {
+        toast(`Are you sure you want to delete the "${name}" category? This action cannot be undone.`, {
+            action: {
+                label: "Delete",
+                onClick: async () => {
+                    try {
+                        const res = await fetch(`/api/admin/categories/${id}`, { method: "DELETE" });
+                        if (res.ok) {
+                            toast.success("Category deleted.");
+                            fetchCategories();
+                        } else {
+                            const data = await res.json();
+                            toast.error(data.error || "Failed to delete category");
+                        }
+                    } catch (error) {
+                        console.error("Error deleting category:", error);
+                        toast.error("An unexpected error occurred while deleting.");
+                    }
+                }
+            },
+            cancel: {
+                label: "Cancel",
+                onClick: () => { }
             }
-        } catch (error) {
-            console.error("Error deleting category:", error);
-            alert("An unexpected error occurred while deleting.");
-        }
+        });
     };
 
     return (

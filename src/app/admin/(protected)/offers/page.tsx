@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Plus, Edit2, Trash2, Search, ArrowUpDown, Tag, X, Loader2 } from "lucide-react";
+import { toast } from "sonner";
 
 export default function OffersPage() {
     const [offers, setOffers] = useState<any[]>([]);
@@ -98,28 +99,45 @@ export default function OffersPage() {
             });
 
             if (res.ok) {
+                toast.success(`Offer ${editingId ? 'updated' : 'created'} successfully!`);
                 setIsModalOpen(false);
                 fetchData();
             } else {
                 const data = await res.json();
-                alert(data.error || "Failed to save offer");
+                toast.error(data.error || "Failed to save offer");
             }
         } catch (error) {
             console.error("Submission error", error);
+            toast.error("An unexpected error occurred");
         } finally {
             setIsSubmitting(false);
         }
     };
 
-    const handleDelete = async (id: string, title: string) => {
-        if (!confirm(`Delete offer "${title}"?`)) return;
-        try {
-            const res = await fetch(`/api/admin/offers/${id}`, { method: "DELETE" });
-            if (res.ok) fetchData();
-            else alert("Failed to delete offer");
-        } catch (error) {
-            console.error("Delete error", error);
-        }
+    const handleDelete = (id: string, title: string) => {
+        toast(`Delete offer "${title}"?`, {
+            action: {
+                label: "Delete",
+                onClick: async () => {
+                    try {
+                        const res = await fetch(`/api/admin/offers/${id}`, { method: "DELETE" });
+                        if (res.ok) {
+                            toast.success("Offer removed.");
+                            fetchData();
+                        } else {
+                            toast.error("Failed to delete offer");
+                        }
+                    } catch (error) {
+                        console.error("Delete error", error);
+                        toast.error("An error occurred during deletion.");
+                    }
+                }
+            },
+            cancel: {
+                label: "Cancel",
+                onClick: () => { }
+            }
+        });
     };
 
     const handleMultiSelect = (e: React.ChangeEvent<HTMLSelectElement>, field: 'applicableCategories' | 'applicableProducts') => {

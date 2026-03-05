@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { Plus, Edit2, Trash2, Search, ArrowUpDown, Image as ImageIcon, X, Loader2 } from "lucide-react";
 import Image from "next/image";
 import { CldUploadWidget } from "next-cloudinary";
+import { toast } from "sonner";
 
 export default function ProductsPage() {
     const [products, setProducts] = useState<any[]>([]);
@@ -62,6 +63,7 @@ export default function ProductsPage() {
                 body: JSON.stringify(payload),
             });
             if (res.ok) {
+                toast.success(`Product ${editingId ? 'updated' : 'created'} successfully!`);
                 setIsAddModalOpen(false);
                 setEditingId(null);
                 setNewProduct({
@@ -70,11 +72,11 @@ export default function ProductsPage() {
                 fetchData(); // Refresh list
             } else {
                 const data = await res.json();
-                alert(data.error || `Failed to ${editingId ? 'update' : 'create'} product`);
+                toast.error(data.error || `Failed to ${editingId ? 'update' : 'create'} product`);
             }
         } catch (error) {
             console.error(`Error ${editingId ? 'updating' : 'creating'} product:`, error);
-            alert("An unexpected error occurred");
+            toast.error("An unexpected error occurred");
         } finally {
             setIsSubmitting(false);
         }
@@ -96,21 +98,31 @@ export default function ProductsPage() {
         setIsAddModalOpen(true);
     };
 
-    const handleDeleteClick = async (id: string, name: string) => {
-        if (!confirm(`Are you sure you want to delete "${name}"? This action cannot be undone.`)) return;
-
-        try {
-            const res = await fetch(`/api/admin/products/${id}`, { method: "DELETE" });
-            if (res.ok) {
-                fetchData();
-            } else {
-                const data = await res.json();
-                alert(data.error || "Failed to delete product");
+    const handleDeleteClick = (id: string, name: string) => {
+        toast(`Are you sure you want to delete "${name}"? This action cannot be undone.`, {
+            action: {
+                label: "Delete",
+                onClick: async () => {
+                    try {
+                        const res = await fetch(`/api/admin/products/${id}`, { method: "DELETE" });
+                        if (res.ok) {
+                            toast.success("Product deleted.");
+                            fetchData();
+                        } else {
+                            const data = await res.json();
+                            toast.error(data.error || "Failed to delete product");
+                        }
+                    } catch (error) {
+                        console.error("Error deleting product:", error);
+                        toast.error("An unexpected error occurred while deleting.");
+                    }
+                }
+            },
+            cancel: {
+                label: "Cancel",
+                onClick: () => { }
             }
-        } catch (error) {
-            console.error("Error deleting product:", error);
-            alert("An unexpected error occurred while deleting.");
-        }
+        });
     };
 
     return (

@@ -1,6 +1,6 @@
 "use client";
 
-import { MapPin, Phone, Mail, Clock, Instagram, Facebook, Send, Loader2 } from "lucide-react";
+import { MapPin, Phone, Mail, Clock, ShieldCheck, Instagram, Facebook, Send, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -59,7 +59,7 @@ export default function ContactPage() {
                                     minLength={2}
                                     maxLength={50}
                                     className="w-full border-b-2 border-gray-200 py-3 bg-transparent text-[#0F2E1D] font-medium focus:outline-none focus:border-[#D4A017] transition-colors"
-                                    placeholder="John Doe"
+                                    placeholder="Your Name"
                                     required
                                     title="Please enter your full name (2-50 characters)"
                                 />
@@ -71,19 +71,19 @@ export default function ContactPage() {
                                     type="email"
                                     id="email"
                                     className="w-full border-b-2 border-gray-200 py-3 bg-transparent text-[#0F2E1D] font-medium focus:outline-none focus:border-[#D4A017] transition-colors"
-                                    placeholder="john@example.com"
+                                    placeholder="Your Email"
                                     required
                                 />
                             </div>
 
                             <div className="space-y-2">
-                                <label htmlFor="phone" className="text-sm font-medium text-gray-700 font-sans uppercase tracking-wider">Phone Number <span className="text-xs text-gray-400 lowercase font-normal">(Optional)</span></label>
+                                <label htmlFor="phone" className="text-sm font-medium text-gray-700 font-sans uppercase tracking-wider">Phone Number <span className="text-xs text-gray-400 lowercase font-normal"></span></label>
                                 <input
                                     type="tel"
                                     id="phone"
                                     pattern="^\+?[0-9\s\-\(\)]{7,15}$"
                                     className="w-full border-b-2 border-gray-200 py-3 bg-transparent text-[#0F2E1D] font-medium focus:outline-none focus:border-[#D4A017] transition-colors"
-                                    placeholder="+91 98765 43210"
+                                    placeholder="Your Phone Number"
                                     title="Please enter a valid phone number format"
                                 />
                             </div>
@@ -141,9 +141,9 @@ export default function ContactPage() {
                                     <div>
                                         <h3 className="text-[#D4A017] font-semibold tracking-wider uppercase text-sm mb-1">Our Location</h3>
                                         <p className="text-gray-200 font-light leading-relaxed font-sans text-lg">
-                                            Bee Kiss Honey Farm,<br />
-                                            Wayanad, Kerala,<br />
-                                            India - 673121
+                                            Fresh valley<br />
+                                            Wayanad, Kerala<br />
+                                            India 670644
                                         </p>
                                     </div>
                                 </div>
@@ -155,7 +155,7 @@ export default function ContactPage() {
                                     <div>
                                         <h3 className="text-[#D4A017] font-semibold tracking-wider uppercase text-sm mb-1">Phone Number</h3>
                                         <p className="text-gray-200 font-light font-sans text-lg">
-                                            +91 98765 43210
+                                            Customer care: 9778761661
                                         </p>
                                     </div>
                                 </div>
@@ -167,7 +167,7 @@ export default function ContactPage() {
                                     <div>
                                         <h3 className="text-[#D4A017] font-semibold tracking-wider uppercase text-sm mb-1">Email Address</h3>
                                         <p className="text-gray-200 font-light font-sans text-lg">
-                                            support@beekiss.in
+                                            frshvalley@gmail.com
                                         </p>
                                     </div>
                                 </div>
@@ -181,6 +181,18 @@ export default function ContactPage() {
                                         <p className="text-gray-200 font-light font-sans text-lg">
                                             Mon–Sat: 9AM – 6PM<br />
                                             Sunday: Closed
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div className="flex items-start gap-5 group">
+                                    <div className="w-12 h-12 rounded-full bg-[#D4A017]/10 flex items-center justify-center shrink-0 group-hover:bg-[#D4A017] transition-colors duration-300">
+                                        <ShieldCheck className="w-6 h-6 text-[#D4A017] group-hover:text-[#0F2E1D] transition-colors" />
+                                    </div>
+                                    <div>
+                                        <h3 className="text-[#D4A017] font-semibold tracking-wider uppercase text-sm mb-1">FSSAI License</h3>
+                                        <p className="text-gray-200 font-light font-sans text-lg">
+                                            21325247000817
                                         </p>
                                     </div>
                                 </div>

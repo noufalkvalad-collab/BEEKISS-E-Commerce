@@ -5,7 +5,7 @@ import Image from "next/image";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Trash2, Heart, ExternalLink } from "lucide-react";
+import { Trash2, Heart, ExternalLink, Loader2 } from "lucide-react";
 import { useWishlistStore } from "@/lib/store/useWishlistStore";
 
 export default function WishlistPage() {
@@ -52,7 +52,12 @@ export default function WishlistPage() {
     };
 
     if (status === "loading" || isLoading) {
-        return <div className="min-h-[70vh] flex items-center justify-center text-forest-green">Loading wishlist...</div>;
+        return (
+            <div className="min-h-[70vh] flex flex-col items-center justify-center text-forest-green">
+                <Loader2 className="w-10 h-10 animate-spin mb-4 text-[#D4A017]" />
+                <p className="text-gray-500 font-medium animate-pulse">Loading wishlist...</p>
+            </div>
+        );
     }
 
     if (wishlist.length === 0) {

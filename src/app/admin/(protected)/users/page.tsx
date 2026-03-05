@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Search, ArrowUpDown, Shield, User, Trash2 } from "lucide-react";
+import { Search, ArrowUpDown, Shield, User, Trash2, Loader2 } from "lucide-react";
 
 export default function UsersPage() {
     const [users, setUsers] = useState<any[]>([]);
@@ -52,7 +52,12 @@ export default function UsersPage() {
                         <tbody className="divide-y divide-gray-100">
                             {isLoading ? (
                                 <tr>
-                                    <td colSpan={5} className="px-6 py-12 text-center text-gray-400">Loading customers...</td>
+                                    <td colSpan={5} className="px-6 py-12 text-center text-gray-400">
+                                        <div className="flex flex-col items-center justify-center">
+                                            <Loader2 className="w-8 h-8 animate-spin text-[#D4A017] mb-2" />
+                                            <p className="animate-pulse">Loading customers...</p>
+                                        </div>
+                                    </td>
                                 </tr>
                             ) : users.length === 0 ? (
                                 <tr>

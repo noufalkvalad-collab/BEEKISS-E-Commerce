@@ -1,18 +1,43 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Filter, SlidersHorizontal, ChevronDown, Search } from "lucide-react";
 import ProductCardActions from "@/components/ProductCardActions";
+import { useSearchParams, useRouter } from "next/navigation";
 
 export default function ProductsClient({ products, categories }: { products: any[], categories: any[] }) {
-    const [searchQuery, setSearchQuery] = useState("");
+    const searchParams = useSearchParams();
+    const router = useRouter();
+    const urlSearchQuery = searchParams.get('search') || "";
+
+    const [searchQuery, setSearchQuery] = useState(urlSearchQuery);
     const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
     const [minPrice, setMinPrice] = useState<string>("");
     const [maxPrice, setMaxPrice] = useState<string>("");
     const [sortBy, setSortBy] = useState<string>("featured");
     const [isSortOpen, setIsSortOpen] = useState(false);
+
+    // Sync state with URL if it changes externally
+    useEffect(() => {
+        setSearchQuery(urlSearchQuery);
+    }, [urlSearchQuery]);
+
+    // Update URL when search changes if maintaining deep links is desired
+    const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value;
+        setSearchQuery(value);
+
+        // Update URL parameter without reloading
+        const params = new URLSearchParams(searchParams.toString());
+        if (value) {
+            params.set('search', value);
+        } else {
+            params.delete('search');
+        }
+        router.replace(`?${params.toString()}`, { scroll: false });
+    };
 
     // Filter and Sort Logic
     const filteredProducts = useMemo(() => {
@@ -89,7 +114,7 @@ export default function ProductsClient({ products, categories }: { products: any
                                 type="text"
                                 placeholder="Search products..."
                                 value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
+                                onChange={handleSearchChange}
                                 className="w-full pl-10 pr-4 py-2 border rounded-md text-sm focus:outline-none focus:border-honey-gold"
                             />
                             <Search className="w-4 h-4 text-gray-400 absolute left-3 top-3" />
@@ -252,6 +277,7 @@ export default function ProductsClient({ products, categories }: { products: any
                                 setSelectedCategory(null);
                                 setMinPrice("");
                                 setMaxPrice("");
+                                router.replace('/products', { scroll: false });
                             }}
                             className="mt-4 text-forest-green font-medium hover:text-honey-gold transition-colors"
                         >

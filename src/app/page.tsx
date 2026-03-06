@@ -6,6 +6,9 @@ import Product from "@/lib/models/Product";
 import ProductCardActions from "@/components/ProductCardActions";
 import { applyActiveOffers } from "@/lib/utils/offerHelper";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export default async function Home() {
   await dbConnect();
 

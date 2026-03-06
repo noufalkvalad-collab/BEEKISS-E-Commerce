@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import dbConnect from "@/lib/db/mongodb";
 import Offer from "@/lib/models/Offer";
 import Product from "@/lib/models/Product";
@@ -31,6 +33,14 @@ export async function POST(req: Request) {
 
         if (new Date(offer.validUntil) < new Date()) {
             return NextResponse.json({ success: false, error: "This promo code has expired" }, { status: 400 });
+        }
+
+        // 1.5 Check if already used by user
+        const session = await getServerSession(authOptions);
+        if (session?.user?.email) {
+            if (offer.usedBy && offer.usedBy.includes(session.user.email)) {
+                return NextResponse.json({ success: false, error: "You have already used this promo code" }, { status: 400 });
+            }
         }
 
         // 2. Fetch full product details for validation

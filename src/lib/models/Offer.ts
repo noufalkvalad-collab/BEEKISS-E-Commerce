@@ -10,6 +10,7 @@ export interface IOffer extends Document {
     applicableProducts?: mongoose.Types.ObjectId[];
     validUntil: Date;
     isActive: boolean;
+    usedBy: string[];
     createdAt: Date;
     updatedAt: Date;
 }
@@ -60,6 +61,9 @@ const OfferSchema = new Schema<IOffer>(
             type: Boolean,
             default: true,
         },
+        usedBy: [{
+            type: String,
+        }],
     },
     {
         timestamps: true,

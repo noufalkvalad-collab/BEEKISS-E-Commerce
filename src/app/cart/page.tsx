@@ -102,7 +102,7 @@ export default function CartPage() {
     }
 
     return (
-        <div className="min-h-screen bg-background pt-16 pb-24">
+        <div className="min-h-screen bg-background pb-24">
             <div className="max-w-7xl mx-auto px-4">
 
                 <div className="flex flex-col md:flex-row gap-12 mt-12">

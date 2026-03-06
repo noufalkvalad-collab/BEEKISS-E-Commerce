@@ -78,6 +78,10 @@ export async function POST(request: Request) {
             });
 
             if (offer && new Date(offer.validUntil) >= new Date()) {
+                if (offer.usedBy && offer.usedBy.includes(session.user.email)) {
+                    return NextResponse.json({ success: false, error: "You have already used this promo code" }, { status: 400 });
+                }
+
                 let applicableItemsFound = false;
 
                 for (const item of processedItems) {
@@ -131,6 +135,14 @@ export async function POST(request: Request) {
             paymentMethod: paymentMethod,
             status: "Pending"
         });
+
+        // 4. Record promo code usage
+        if (appliedPromoCode) {
+            await Offer.findOneAndUpdate(
+                { code: appliedPromoCode },
+                { $push: { usedBy: session.user.email } }
+            );
+        }
 
         return NextResponse.json({
             success: true,

@@ -83,6 +83,7 @@ export default function ProductCardActions({ product, className = "" }: { produc
     return (
         <div className={`flex flex-row gap-3 ${className}`}>
             <button
+                suppressHydrationWarning
                 onClick={toggleWishlist}
                 disabled={isProcessing}
                 className={`w-10 h-10 rounded-full bg-white flex items-center justify-center shadow-md transition-colors ${isWishlisted ? "text-red-500 bg-red-50" : "text-gray-400 hover:text-red-500"}`}
@@ -91,6 +92,7 @@ export default function ProductCardActions({ product, className = "" }: { produc
                 <Heart className={`w-5 h-5 ${isWishlisted ? "fill-current" : ""}`} />
             </button>
             <button
+                suppressHydrationWarning
                 onClick={handleAddToCart}
                 className="w-10 h-10 rounded-full bg-forest-green text-white flex items-center justify-center shadow-md transition-colors hover:bg-forest-green/90"
                 title="Add to cart"

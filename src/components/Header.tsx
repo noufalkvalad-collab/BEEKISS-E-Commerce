@@ -6,6 +6,7 @@ import { useCartStore } from "@/lib/store/useCartStore";
 import { useWishlistStore } from "@/lib/store/useWishlistStore";
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 
 export default function Header() {
@@ -14,7 +15,19 @@ export default function Header() {
     const setWishlistItems = useWishlistStore((state) => state.setItems);
     const [mounted, setMounted] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const [isSearchOpen, setIsSearchOpen] = useState(false);
+    const [searchQuery, setSearchQuery] = useState("");
     const { data: session, status } = useSession();
+    const router = useRouter();
+
+    const handleSearchSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (searchQuery.trim()) {
+            router.push(`/products?search=${encodeURIComponent(searchQuery.trim())}`);
+            setIsSearchOpen(false);
+            setSearchQuery("");
+        }
+    };
 
     useEffect(() => {
         setMounted(true);
@@ -69,9 +82,25 @@ export default function Header() {
 
                 {/* Actions */}
                 <div className="flex items-center gap-6">
-                    <button className="text-[#D4A017] hover:text-white transition-colors hidden sm:block" suppressHydrationWarning>
-                        <Search className="w-5 h-5" />
-                    </button>
+                    {isSearchOpen ? (
+                        <form onSubmit={handleSearchSubmit} className="hidden sm:flex items-center relative animate-in fade-in slide-in-from-right-4 duration-300">
+                            <input
+                                type="text"
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                placeholder="Search honey..."
+                                autoFocus
+                                className="bg-transparent border-b border-[#D4A017] text-white focus:outline-none placeholder-gray-400 px-2 py-1 pr-6 w-48 transition-all"
+                            />
+                            <button type="button" onClick={() => setIsSearchOpen(false)} className="absolute right-0 text-gray-400 hover:text-[#D4A017] transition-colors">
+                                <X className="w-4 h-4" />
+                            </button>
+                        </form>
+                    ) : (
+                        <button onClick={() => setIsSearchOpen(true)} className="text-[#D4A017] hover:text-white transition-colors hidden sm:block" aria-label="Open search" suppressHydrationWarning>
+                            <Search className="w-5 h-5" />
+                        </button>
+                    )}
 
                     <Link href={status === 'authenticated' ? "/user/orders" : "/login"} className="text-[#D4A017] hover:text-white transition-colors flex items-center" suppressHydrationWarning>
                         {status === 'authenticated' && session?.user?.image ? (

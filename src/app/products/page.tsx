@@ -5,6 +5,7 @@ import Category from "@/lib/models/Category";
 import Product from "@/lib/models/Product";
 import ProductsClient from "./ProductsClient";
 import { applyActiveOffers } from "@/lib/utils/offerHelper";
+import { Suspense } from "react";
 
 export default async function ProductsPage() {
     await dbConnect();
@@ -42,7 +43,9 @@ export default async function ProductsPage() {
                 </div>
             </div>
 
-            <ProductsClient products={products} categories={categories} />
+            <Suspense fallback={<div className="min-h-[50vh] flex items-center justify-center">Loading products...</div>}>
+                <ProductsClient products={products} categories={categories} />
+            </Suspense>
         </div>
     );
 }

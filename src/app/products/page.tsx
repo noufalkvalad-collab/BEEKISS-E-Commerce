@@ -7,6 +7,9 @@ import ProductsClient from "./ProductsClient";
 import { applyActiveOffers } from "@/lib/utils/offerHelper";
 import { Suspense } from "react";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export default async function ProductsPage() {
     await dbConnect();
     const dbProductsBase = await Product.find({ isActive: true }).populate("category", "name slug").sort({ createdAt: -1 }).lean();

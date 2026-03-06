@@ -12,6 +12,9 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import ReviewSection from "@/components/ReviewSection";
+
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 export default function ProductDetailsPage({ params }: { params: Promise<{ slug: string }> }) {
     const resolvedParams = use(params);
     const slug = resolvedParams.slug;

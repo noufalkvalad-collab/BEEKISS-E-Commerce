@@ -62,7 +62,7 @@ export default function WishlistPage() {
 
     if (wishlist.length === 0) {
         return (
-            <div className="min-h-[70vh] bg-background pt-24 pb-24 flex flex-col items-center justify-center px-4">
+            <div className="min-h-[70vh] bg-background pb-24 flex flex-col items-center justify-center px-4">
                 <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-6">
                     <Heart className="w-10 h-10 text-gray-300" />
                 </div>
@@ -81,7 +81,7 @@ export default function WishlistPage() {
     }
 
     return (
-        <div className="min-h-screen bg-background pt-24 pb-24">
+        <div className="min-h-screen bg-background pb-24">
             <div className="max-w-7xl mx-auto px-4">
                 <div className="flex items-center gap-3 mb-10 pb-6 border-b border-gray-100">
                     <Heart className="w-8 h-8 text-honey-gold fill-honey-gold" />

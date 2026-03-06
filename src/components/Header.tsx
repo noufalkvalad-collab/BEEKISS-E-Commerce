@@ -35,7 +35,7 @@ export default function Header() {
     };
 
     return (
-        <header className="fixed top-0 w-full z-50 bg-[#0F2E1D] shadow-lg border-b border-[#D4A017]/20 transition-all duration-300">
+        <header className="sticky top-0 w-full z-50 bg-[#0F2E1D] shadow-lg border-b border-[#D4A017]/20 transition-all duration-300">
             <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
 
                 {/* Mobile menu toggle */}

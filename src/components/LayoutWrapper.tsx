@@ -3,6 +3,7 @@
 import { usePathname } from "next/navigation";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import GlobalOfferBanner from "@/components/GlobalOfferBanner";
 
 export default function LayoutWrapper({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
@@ -10,8 +11,9 @@ export default function LayoutWrapper({ children }: { children: React.ReactNode 
 
     return (
         <>
+            {!isAdminRoute && <GlobalOfferBanner />}
             {!isAdminRoute && <Header />}
-            <main className={`flex-1 ${!isAdminRoute ? 'mt-20' : ''}`}>
+            <main className="flex-1 w-full flex flex-col">
                 {children}
             </main>
             {!isAdminRoute && <Footer />}

@@ -31,7 +31,7 @@ export default async function ProductsPage() {
     }));
 
     return (
-        <div className="min-h-screen bg-background pt-10 pb-24">
+        <div className="min-h-screen bg-background pb-24">
             {/* Page Header */}
             <div className="bg-forest-green text-white py-16 mb-12">
                 <div className="max-w-7xl mx-auto px-4 text-center">

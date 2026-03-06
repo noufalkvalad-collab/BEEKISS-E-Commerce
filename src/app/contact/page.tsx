@@ -25,7 +25,7 @@ export default function ContactPage() {
     return (
         <main className="min-h-screen bg-[#FDFDF9] overflow-hidden">
             {/* Hero Section */}
-            <section className="w-full pt-44 pb-32 px-6 bg-gradient-to-b from-[#0F2E1D] to-[#163b22] text-center text-white relative">
+            <section className="w-full pt-28 pb-32 px-6 bg-gradient-to-b from-[#0F2E1D] to-[#163b22] text-center text-white relative">
                 {/* Subtle decorative elements */}
                 <div className="absolute top-0 left-0 w-full h-full overflow-hidden opacity-20 pointer-events-none">
                     <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[150%] rounded-full bg-gradient-to-r from-transparent to-white/10 blur-3xl transform rotate-12"></div>

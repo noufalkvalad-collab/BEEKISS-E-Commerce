@@ -60,6 +60,19 @@ export async function POST(req: Request) {
             isActive: body.isActive ?? true,
         });
 
+        // Auto-disable lesser global offers if a new active global offer is created
+        if (newOffer.type === 'GLOBAL' && newOffer.isActive) {
+            await Offer.updateMany(
+                {
+                    _id: { $ne: newOffer._id },
+                    type: 'GLOBAL',
+                    isActive: true,
+                    discountPercentage: { $lt: newOffer.discountPercentage }
+                },
+                { $set: { isActive: false } }
+            );
+        }
+
         return NextResponse.json(newOffer, { status: 201 });
     } catch (error: any) {
         if (error.code === 11000) {

@@ -27,14 +27,23 @@ export async function GET() {
         // Format to match product UI
         const validWishlist = user.wishlist.filter((p: any) => p && typeof p === 'object' && p._id);
 
-        const wishlistData = validWishlist.map((p: any) => ({
-            id: p._id.toString(),
-            name: p.name,
-            slug: p.slug,
-            price: p.price,
-            image: p.images && p.images.length > 0 ? p.images[0] : "/honey.jpg",
-            badge: p.badge || null,
-        }));
+        const wishlistData = validWishlist.map((p: any) => {
+            let minPrice = 0;
+            if (p.variants && p.variants.length > 0) {
+                minPrice = Math.min(...p.variants.map((v: any) => v.price));
+            } else if (p.price) {
+                minPrice = p.price;
+            }
+
+            return {
+                id: p._id.toString(),
+                name: p.name,
+                slug: p.slug,
+                price: minPrice,
+                image: p.images && p.images.length > 0 ? p.images[0] : "/honey.jpg",
+                badge: p.badge || null,
+            };
+        });
 
         return NextResponse.json(wishlistData);
     } catch (error) {

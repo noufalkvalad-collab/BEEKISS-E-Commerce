@@ -16,16 +16,26 @@ export default async function ProductsPage() {
     const dbProducts = await applyActiveOffers(dbProductsBase);
 
     // Map to the format expected by the UI
-    const products = dbProducts.map((p: any) => ({
-        id: p._id.toString(),
-        name: p.name,
-        slug: p.slug,
-        category: p.category?.name || "Uncategorized",
-        price: p.price,
-        image: p.images && p.images.length > 0 ? p.images[0] : "/honey.jpg",
-        badge: p.badge || null,
-        offer: p.offer || null,
-    }));
+    const products = dbProducts.map((p: any) => {
+        let minPrice = 0;
+        if (p.variants && p.variants.length > 0) {
+            minPrice = Math.min(...p.variants.map((v: any) => v.price));
+        } else if (p.price) {
+            minPrice = p.price;
+        }
+
+        return {
+            id: p._id.toString(),
+            name: p.name,
+            slug: p.slug,
+            category: p.category?.name || "Uncategorized",
+            price: minPrice,
+            hasVariants: p.variants && p.variants.length > 0,
+            image: p.images && p.images.length > 0 ? p.images[0] : "/honey.jpg",
+            badge: p.badge || null,
+            offer: p.offer || null,
+        };
+    });
 
     const dbCategories = await Category.find({}).sort({ name: 1 }).lean();
     const categories = dbCategories.map((c: any) => ({

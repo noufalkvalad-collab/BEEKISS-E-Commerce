@@ -7,8 +7,34 @@ import ProductsClient from "./ProductsClient";
 import { applyActiveOffers } from "@/lib/utils/offerHelper";
 import { Suspense } from "react";
 
+import { Metadata } from "next";
+
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
+
+export const metadata: Metadata = {
+    title: "Our Collection | Premium Honey & Wayanad Products",
+    description: "Explore our complete range of premium quality, sustainably sourced raw honey and healthy Wayanad food products. Experience nature's perfection in every jar.",
+    keywords: [
+        "honey",
+        "buy pure honey online",
+        "organic honey collection",
+        "pure honey",
+        "ginger honey",
+        "lemon honey",
+        "flavoured honey",
+        "exotic honey flavours",
+        "forest honey",
+        "honey food products",
+        "honey products in wayanad",
+        "kerala pure honey"
+    ],
+    openGraph: {
+        title: "Our Collection | Bee Kiss",
+        description: "Explore our complete range of premium quality, sustainably sourced raw honey and healthy Wayanad food products.",
+        url: "https://beekiss.in/products",
+    }
+};
 
 export default async function ProductsPage() {
     await dbConnect();

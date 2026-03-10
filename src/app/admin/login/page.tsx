@@ -79,6 +79,7 @@ export default function AdminLoginPage() {
                             className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#D4A017] transition-all"
                             placeholder="admin@beekiss.com"
                             title="Please enter a valid email address."
+                            suppressHydrationWarning
                         />
                     </div>
                     <div>
@@ -89,6 +90,7 @@ export default function AdminLoginPage() {
                             onChange={(e) => setPassword(e.target.value)}
                             className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-[#D4A017] font-sans text-[#0F2E1D]"
                             required
+                            suppressHydrationWarning
                         />
                     </div>
 
@@ -102,6 +104,7 @@ export default function AdminLoginPage() {
                         type="submit"
                         disabled={isLoading}
                         className="w-full bg-[#0F2E1D] text-[#D4A017] font-bold py-3.5 px-6 rounded-xl flex items-center justify-center gap-2 hover:bg-[#163b22] hover:-translate-y-1 transition-all duration-300 font-sans text-lg disabled:opacity-70 disabled:cursor-not-allowed mt-2"
+                        suppressHydrationWarning
                     >
                         {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Authenticate"}
                     </button>

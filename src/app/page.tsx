@@ -5,9 +5,36 @@ import dbConnect from "@/lib/db/mongodb";
 import Product from "@/lib/models/Product";
 import ProductCardActions from "@/components/ProductCardActions";
 import { applyActiveOffers } from "@/lib/utils/offerHelper";
+import { Metadata } from "next";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
+
+export const metadata: Metadata = {
+  title: "Bee Kiss | Premium Pure Honey & Wayanad Food Products",
+  description: "Discover Bee Kiss's 100% natural, premium pure honey and healthy authentic food products directly from Wayanad, Kerala. Shop ginger honey, lemon honey, and more.",
+  keywords: [
+    "beekiss",
+    "bee kiss",
+    "wayanad food products",
+    "kerala food products",
+    "buy pure honey online",
+    "organic honey brand india",
+    "premium raw honey",
+    "pure honey",
+    "raw honey",
+    "natural sweeteners",
+    "best honey in kerala",
+    "healthy foods",
+    "authentic wayanad products",
+    "food product"
+  ],
+  openGraph: {
+    title: "Bee Kiss | Premium Pure Honey & Wayanad Food Products",
+    description: "Discover Bee Kiss's 100% natural, premium pure honey and healthy authentic food products directly from Wayanad, Kerala.",
+    url: "https://beekiss.in",
+  }
+};
 
 export default async function Home() {
   await dbConnect();

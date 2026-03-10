@@ -17,8 +17,33 @@ const poppins = Poppins({
 });
 
 export const metadata: Metadata = {
-  title: "Bee Kiss | Premium Pure Honey",
-  description: "Experience the luxury of nature with Bee Kiss. 100% natural, premium honey harvested with care.",
+  title: {
+    default: "Bee Kiss | Premium Pure Honey & Wayanad Food Products",
+    template: "%s | Bee Kiss"
+  },
+  description: "Experience the luxury of nature with Bee Kiss. 100% natural, premium pure honey, flavoured honey, and healthy Wayanad food products harvested with care from Kerala.",
+  authors: [{ name: "Bee Kiss" }],
+  creator: "Bee Kiss",
+  publisher: "Bee Kiss",
+  openGraph: {
+    type: "website",
+    locale: "en_IN",
+    url: "https://beekiss.in", // Replace with actual production domain when deployed
+    title: "Bee Kiss | Premium Pure Honey",
+    description: "100% natural, premium pure honey and healthy authentic food products directly from Wayanad, Kerala.",
+    siteName: "Bee Kiss",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
 };
 
 export default function RootLayout({

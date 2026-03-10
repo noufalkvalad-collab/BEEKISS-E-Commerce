@@ -35,7 +35,7 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ slug:
     const router = useRouter();
 
     useEffect(() => {
-        fetch(`/api/products/${slug}`)
+        fetch(`/api/products/${slug}`, { cache: 'no-store' })
             .then(res => res.json())
             .then(data => {
                 setProductData(data);
@@ -53,7 +53,7 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ slug:
                 setIsLoading(false);
             });
 
-        fetch(`/api/products?exclude=${slug}`)
+        fetch(`/api/products?exclude=${slug}`, { cache: 'no-store' })
             .then(res => res.json())
             .then(data => setRecommended(Array.isArray(data) ? data : []))
             .catch(err => console.error("Failed to fetch recommended:", err));
@@ -70,7 +70,7 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ slug:
         addItemToCart({
             id: productData.id || productData._id,
             name: productData.name,
-            price: selectedVariant ? selectedVariant.price : productData.price,
+            price: Number((selectedVariant?.price || productData.price) || 0),
             image: productData.images?.[0] || "/honey.jpg",
             quantity,
             size: selectedVariant ? selectedVariant.weight : "Standard"
@@ -119,6 +119,9 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ slug:
     if (!productData || productData.error) {
         return <div className="min-h-screen flex items-center justify-center pt-24 pb-24 text-red-500">Product not found.</div>;
     }
+
+    console.log("DEBUG: selectedVariant =", selectedVariant);
+    console.log("DEBUG: productData =", productData);
 
     return (
         <div className="min-h-screen bg-background pb-24">
@@ -188,15 +191,15 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ slug:
 
                         <p className="text-3xl font-medium text-forest-green mb-8 flex items-baseline gap-4">
                             ₹{(productData.offer
-                                ? ((selectedVariant?.price ?? productData.price) * (1 - (productData.offer.discountPercentage / 100)))
-                                : (selectedVariant?.price ?? productData.price ?? 0)).toLocaleString('en-IN')
+                                ? (Number(selectedVariant?.price !== undefined ? selectedVariant.price : productData.price || 0) * (1 - (Number(productData.offer.discountPercentage) / 100)))
+                                : Number(selectedVariant?.price !== undefined ? selectedVariant.price : productData.price || 0)).toLocaleString('en-IN')
                             }
                             {(productData.offer || productData.compareAtPrice) && (
                                 <span className="text-lg text-gray-400 line-through">
                                     ₹{
                                         productData.offer
-                                            ? (selectedVariant?.price ?? productData.price).toLocaleString('en-IN')
-                                            : productData.compareAtPrice.toLocaleString('en-IN')
+                                            ? Number(selectedVariant?.price !== undefined ? selectedVariant.price : productData.price || 0).toLocaleString('en-IN')
+                                            : Number(productData.compareAtPrice || 0).toLocaleString('en-IN')
                                     }
                                 </span>
                             )}

@@ -148,7 +148,7 @@ export default function ProductsPage() {
 
             {/* Modal */}
             {isAddModalOpen && (
-                <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 overflow-y-auto">
+                <div className="fixed inset-0 bg-black/50 z-50 flex items-start justify-center p-4 pt-10 pb-10 overflow-y-auto">
                     <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl my-8 animate-[fadeInUp_0.3s_ease-out]">
                         <div className="flex justify-between items-center p-6 border-b border-gray-100 sticky top-0 bg-white z-10 rounded-t-2xl">
                             <h2 className="text-xl font-serif font-bold text-[#0F2E1D]">
@@ -200,49 +200,58 @@ export default function ProductsPage() {
                                     </div>
                                 </div>
                                 <div className="space-y-4">
-                                    <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-                                        <div className="flex justify-between items-center mb-3">
-                                            <label className="block text-sm font-medium text-gray-800">Product Variants *</label>
-                                            <button type="button" onClick={() => setNewProduct({ ...newProduct, variants: [...newProduct.variants, { weight: "", price: "", stock: "10" }] })}
-                                                className="text-xs text-honey-gold hover:text-yellow-700 font-medium">+ Add Size</button>
+                                    <div className="bg-gray-50 border border-gray-200 rounded-lg overflow-hidden flex flex-col">
+                                        <div className="bg-white border-b border-gray-200 p-4 sticky top-0 z-10 hidden">
+                                            {/* Header omitted to save vertical space if needed, button moved to bottom */}
                                         </div>
-                                        <div className="space-y-3">
-                                            {newProduct.variants.map((variant, index) => (
-                                                <div key={index} className="flex gap-2 items-center bg-white p-2 border border-gray-100 rounded shadow-sm">
-                                                    <input type="text" required placeholder="Size / Weight (e.g. 250g)" value={variant.weight}
-                                                        onChange={(e) => {
-                                                            const newVariants = [...newProduct.variants];
-                                                            newVariants[index].weight = e.target.value;
-                                                            setNewProduct({ ...newProduct, variants: newVariants });
-                                                        }}
-                                                        className="w-1/3 px-3 py-1.5 text-sm border border-gray-200 rounded focus:ring-1 focus:ring-[#D4A017]/50" />
-                                                    <input type="number" required min="0.01" step="0.01" placeholder="Variant Price ₹" value={variant.price}
-                                                        onChange={(e) => {
-                                                            const newVariants = [...newProduct.variants];
-                                                            newVariants[index].price = e.target.value;
-                                                            setNewProduct({ ...newProduct, variants: newVariants });
-                                                        }}
-                                                        className="w-1/3 px-3 py-1.5 text-sm border border-gray-200 rounded focus:ring-1 focus:ring-[#D4A017]/50"
-                                                        title="Price must be greater than 0" />
-                                                    <input type="number" required min="0" step="1" placeholder="Variant Stock Qty" value={variant.stock}
-                                                        onChange={(e) => {
-                                                            const newVariants = [...newProduct.variants];
-                                                            newVariants[index].stock = e.target.value;
-                                                            setNewProduct({ ...newProduct, variants: newVariants });
-                                                        }}
-                                                        className="w-1/4 px-3 py-1.5 text-sm border border-gray-200 rounded focus:ring-1 focus:ring-[#D4A017]/50"
-                                                        title="Stock must be 0 or greater" />
-                                                    {newProduct.variants.length > 1 && (
-                                                        <button type="button" onClick={() => {
-                                                            const newVariants = newProduct.variants.filter((_, i) => i !== index);
-                                                            setNewProduct({ ...newProduct, variants: newVariants });
-                                                        }}
-                                                            className="text-gray-400 hover:text-red-500 p-1 transition-colors">
-                                                            <Trash2 className="w-4 h-4" />
-                                                        </button>
-                                                    )}
-                                                </div>
-                                            ))}
+                                        <div className="p-4 flex-1">
+                                            <label className="block text-sm font-medium text-gray-800 mb-3">Product Variants *</label>
+                                            <div className="space-y-3 max-h-[35vh] overflow-y-auto pr-2 custom-scrollbar">
+                                                {newProduct.variants.map((variant, index) => (
+                                                    <div key={index} className="flex gap-2 items-center bg-white p-2 border border-gray-200 rounded shadow-sm">
+                                                        <input type="text" required placeholder="Size / Weight (e.g. 250g)" value={variant.weight}
+                                                            onChange={(e) => {
+                                                                const newVariants = [...newProduct.variants];
+                                                                newVariants[index].weight = e.target.value;
+                                                                setNewProduct({ ...newProduct, variants: newVariants });
+                                                            }}
+                                                            className="w-[30%] px-2 py-1.5 text-sm border border-gray-200 rounded focus:ring-1 focus:ring-[#D4A017]/50" />
+                                                        <input type="number" required min="0.01" step="0.01" placeholder="Price ₹" value={variant.price}
+                                                            onChange={(e) => {
+                                                                const newVariants = [...newProduct.variants];
+                                                                newVariants[index].price = e.target.value;
+                                                                setNewProduct({ ...newProduct, variants: newVariants });
+                                                            }}
+                                                            className="w-[30%] px-2 py-1.5 text-sm border border-gray-200 rounded focus:ring-1 focus:ring-[#D4A017]/50"
+                                                            title="Price must be greater than 0" />
+                                                        <input type="number" required min="0" step="1" placeholder="Qty" value={variant.stock}
+                                                            onChange={(e) => {
+                                                                const newVariants = [...newProduct.variants];
+                                                                newVariants[index].stock = e.target.value;
+                                                                setNewProduct({ ...newProduct, variants: newVariants });
+                                                            }}
+                                                            className="w-[20%] px-2 py-1.5 text-sm border border-gray-200 rounded focus:ring-1 focus:ring-[#D4A017]/50"
+                                                            title="Stock must be 0 or greater" />
+                                                        {newProduct.variants.length > 1 ? (
+                                                            <button type="button" onClick={() => {
+                                                                const newVariants = newProduct.variants.filter((_, i) => i !== index);
+                                                                setNewProduct({ ...newProduct, variants: newVariants });
+                                                            }}
+                                                                className="w-[20%] text-gray-400 hover:text-red-500 p-1 transition-colors flex justify-center">
+                                                                <Trash2 className="w-4 h-4" />
+                                                            </button>
+                                                        ) : (
+                                                            <div className="w-[20%]"></div>
+                                                        )}
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                        <div className="bg-white border-t border-gray-200 p-3 sticky bottom-0 z-10 flex justify-center shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+                                            <button type="button" onClick={() => setNewProduct({ ...newProduct, variants: [...newProduct.variants, { weight: "", price: "", stock: "10" }] })}
+                                                className="text-sm border-2 border-honey-gold/30 hover:border-honey-gold text-forest-green font-medium py-1.5 px-4 rounded-lg bg-honey-gold/5 hover:bg-honey-gold/10 transition-colors w-full flex items-center justify-center gap-2">
+                                                <Plus className="w-4 h-4" /> Add Another Size
+                                            </button>
                                         </div>
                                     </div>
                                     <div>

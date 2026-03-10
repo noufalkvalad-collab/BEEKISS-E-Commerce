@@ -260,9 +260,9 @@ export default function ProductsClient({ products, categories }: { products: any
                                 </h3>
                                 <p className="text-sm text-gray-500 mb-2">{product.category}</p>
                                 <p className="font-medium text-forest-green mt-auto flex items-center gap-2">
-                                    <span>{product.hasVariants ? "From " : ""}₹{(product.offer ? (product.price - (product.price * (product.offer.discountPercentage / 100))) : product.price).toLocaleString('en-IN')}</span>
+                                    <span>{product.hasVariants ? "From " : ""}₹{(product.offer ? (Number(product.price !== undefined ? product.price : 0) - (Number(product.price !== undefined ? product.price : 0) * (Number(product.offer.discountPercentage) / 100))) : Number(product.price !== undefined ? product.price : 0)).toLocaleString('en-IN')}</span>
                                     {product.offer && (
-                                        <span className="text-xs text-gray-400 line-through">₹{product.price.toLocaleString('en-IN')}</span>
+                                        <span className="text-xs text-gray-400 line-through">₹{Number(product.price !== undefined ? product.price : 0).toLocaleString('en-IN')}</span>
                                     )}
                                 </p>
                             </Link>

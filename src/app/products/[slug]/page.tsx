@@ -22,6 +22,7 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ slug:
     const [quantity, setQuantity] = useState(1);
     const [recommended, setRecommended] = useState<any[]>([]);
     const [isProcessing, setIsProcessing] = useState(false);
+    const [isDescExpanded, setIsDescExpanded] = useState(false);
     const addItemToCart = useCartStore((state) => state.addItem);
     const { hasItem, addItem: addWishlist, removeItem: removeWishlist } = useWishlistStore();
     const [mounted, setMounted] = useState(false);
@@ -205,9 +206,17 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ slug:
                             )}
                         </p>
 
-                        <p className="text-gray-600 font-light leading-relaxed mb-8">
-                            {productData.description || "No description available for this product."}
-                        </p>
+                        <div className="mb-8">
+                            <p className={`text-gray-600 font-light leading-relaxed ${isDescExpanded ? '' : 'line-clamp-1 sm:line-clamp-none'} transition-all`}>
+                                {productData.description || "No description available for this product."}
+                            </p>
+                            <button 
+                                onClick={() => setIsDescExpanded(!isDescExpanded)} 
+                                className="text-honey-gold text-sm font-medium mt-1 sm:hidden hover:underline"
+                            >
+                                {isDescExpanded ? "Read less" : "Read more"}
+                            </button>
+                        </div>
 
                         {/* Weight Options */}
                         <div className="mb-8">

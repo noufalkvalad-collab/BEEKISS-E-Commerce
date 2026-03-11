@@ -4,6 +4,7 @@ import { usePathname } from "next/navigation";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import GlobalOfferBanner from "@/components/GlobalOfferBanner";
+import ChatBot from "@/components/ChatBot";
 
 export default function LayoutWrapper({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
@@ -17,6 +18,7 @@ export default function LayoutWrapper({ children }: { children: React.ReactNode 
                 {children}
             </main>
             {!isAdminRoute && <Footer />}
+            {!isAdminRoute && <ChatBot />}
         </>
     );
 }

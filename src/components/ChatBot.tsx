@@ -43,12 +43,18 @@ export default function ChatBot() {
     setIsLoading(true);
 
     try {
-      const response = await fetch("/api/chat", {
+      const apiEndpoint = process.env.NEXT_PUBLIC_CHAT_API_URL || "/api/chat";
+      const response = await fetch(apiEndpoint, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ message: userMessage }),
+        body: JSON.stringify({ 
+          message: userMessage,
+          context: {
+            path: window.location.pathname
+          }
+        }),
       });
 
       if (!response.ok) {

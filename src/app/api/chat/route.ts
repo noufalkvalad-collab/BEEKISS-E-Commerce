@@ -1,9 +1,11 @@
 import { NextResponse } from 'next/server';
 import { GoogleGenAI } from '@google/genai';
+import dbConnect from '@/lib/db/mongodb';
+import Product from '@/lib/models/Product';
 
 export async function POST(request: Request) {
   try {
-    const { message } = await request.json();
+    const { message, context } = await request.json();
 
     if (!message) {
       return NextResponse.json(
@@ -11,6 +13,18 @@ export async function POST(request: Request) {
         { status: 400 }
       );
     }
+
+    // Connect to Database
+    await dbConnect();
+
+    // Fetch live product data
+    const products = await Product.find({ isActive: true }).lean();
+    
+    // Format product data for the AI context
+    const productsList = products.map(p => {
+      const variants = p.variants.map((v: any) => `  - ${v.weight}: ₹${v.price}`).join('\n');
+      return `\n${p.name}\n${p.description || ''}\nVariants:\n${variants}`;
+    }).join('\n');
 
     const apiKey = process.env.GEMINI_API_KEY;
 
@@ -24,7 +38,8 @@ export async function POST(request: Request) {
         responseContent = "I can certainly help you with your delivery and order details! I am redirecting you to your orders page so we can look at your specific orders together.";
         action = 'NAVIGATE_ORDERS';
       } else if (lowerMessage.includes('product') || lowerMessage.includes('honey')) {
-        responseContent = "Bee Kiss offers 100% natural, premium pure honey and healthy authentic food products directly from Wayanad, Kerala. Our honey is available in different sizes and flavors to suit your taste.";
+        const productNames = products.slice(0, 3).map(p => p.name).join(', ');
+        responseContent = `Bee Kiss offers 100% natural, premium pure honey and healthy authentic food products directly from Wayanad, Kerala. Some of our live products include: ${productNames}.`;
       } else if (lowerMessage.includes('process') || lowerMessage.includes('about')) {
         responseContent = "At Bee Kiss, we partner directly with local farmers in Wayanad. Our pure honey is sustainably harvested from the wild, filtered naturally to preserve its goodness, and packaged with care to bring nature's luxury directly to your home.";
       }
@@ -48,45 +63,14 @@ You should speak in a mix of Malayalam and simple English so customers from Kera
 
 Always be friendly and helpful. Your job is to explain Bee Kiss products, give the correct prices and help customers place orders.
 
-Bee Kiss Product Prices:
+Current Page Context:
+The user is currently on: ${context?.path || 'unknown page'}
 
-Pure Honey
-8g stick – ₹10
-100g – ₹90
-250g – ₹210
-500g – ₹400
-1kg – ₹800
-
-Ginger Honey
-10g stick – ₹20
-100g – ₹200
-250g – ₹400
-500g – ₹800
-1kg – ₹1600
-
-Lemon Honey
-10g stick – ₹20
-100g – ₹200
-250g – ₹400
-500g – ₹800
-1kg – ₹1600
-
-Golden Honey
-10g stick – ₹20
-100g – ₹200
-250g – ₹400
-500g – ₹800
-1kg – ₹1600
-
-Banana Lemon Honey Pouch
-50g – ₹60
-100g – ₹120
-250g – ₹300
-500g – ₹600
-1kg – ₹1000
+Bee Kiss - LIVE Product Catalog (Use these prices and details):
+${productsList}
 
 Rules:
-• Always give prices exactly as listed.
+• Always give prices exactly as listed in the catalog above.
 • Reply in Malayalam + English mix.
 • Keep answers short and clear.
 • Encourage customers to order through WhatsApp.

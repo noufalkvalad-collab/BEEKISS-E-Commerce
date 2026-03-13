@@ -26,7 +26,7 @@ export async function POST(request: Request) {
       return `\n${p.name}\n${p.description || ''}\nVariants:\n${variants}`;
     }).join('\n');
 
-    const apiKey = process.env.GEMINI_API_KEY;
+    const apiKey = process.env.BEEKISS_GEMINI_API_KEY || process.env.GEMINI_API_KEY;
 
     // Fallback if the user hasn't added the API Key yet
     if (!apiKey) {

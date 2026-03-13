@@ -44,18 +44,41 @@ export default function ChatBot() {
 
     try {
       const apiEndpoint = process.env.NEXT_PUBLIC_CHAT_API_URL || "/api/chat";
-      const response = await fetch(apiEndpoint, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ 
-          message: userMessage,
-          context: {
-            path: window.location.pathname
-          }
-        }),
-      });
+      let response;
+      
+      try {
+        response = await fetch(apiEndpoint, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ 
+            message: userMessage,
+            context: {
+              path: window.location.pathname
+            }
+          }),
+        });
+      } catch (fetchError) {
+        console.warn("Primary API failed, falling back to local API:", fetchError);
+        // Fallback to local API if primary fails (e.g., n8n is down)
+        if (apiEndpoint !== "/api/chat") {
+          response = await fetch("/api/chat", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ 
+              message: userMessage,
+              context: {
+                path: window.location.pathname
+              }
+            }),
+          });
+        } else {
+          throw fetchError;
+        }
+      }
 
       if (!response.ok) {
         throw new Error("Failed to get response");

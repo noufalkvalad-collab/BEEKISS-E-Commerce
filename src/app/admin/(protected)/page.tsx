@@ -6,6 +6,7 @@ import Product from "@/lib/models/Product";
 import User from "@/lib/models/User";
 import Order from "@/lib/models/Order";
 import { Activity, IndianRupee, ShoppingBag, Users as UsersIcon } from "lucide-react";
+import RevenueExportButtons from "./RevenueExportButtons";
 
 async function getDashboardStats() {
     await dbConnect();
@@ -16,7 +17,7 @@ async function getDashboardStats() {
         User.countDocuments({ role: { $ne: "admin" } }),
         Order.countDocuments(),
         Order.aggregate([
-            { $match: { status: { $ne: "Cancelled" } } },
+            { $match: { status: "Delivered" } },
             { $group: { _id: null, total: { $sum: "$totalAmount" } } }
         ])
     ]);
@@ -54,9 +55,12 @@ export default async function AdminOverviewPage() {
 
     return (
         <div className="max-w-7xl mx-auto animation-fade-in">
-            <div className="mb-8">
-                <h1 className="text-3xl font-serif font-bold text-[#0F2E1D]">Dashboard Overview</h1>
-                <p className="text-gray-500 mt-1 font-sans">Welcome back, {payload.email}</p>
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+                <div>
+                    <h1 className="text-3xl font-serif font-bold text-[#0F2E1D]">Dashboard Overview</h1>
+                    <p className="text-gray-500 mt-1 font-sans">Welcome back, {payload.email}</p>
+                </div>
+                <RevenueExportButtons stats={stats} />
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">

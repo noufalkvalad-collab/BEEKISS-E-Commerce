@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Plus, Edit2, Trash2, Search, ArrowUpDown, Image as ImageIcon, X, Loader2 } from "lucide-react";
+import { Plus, Edit2, Trash2, Search, ArrowUpDown, Image as ImageIcon, X, Loader2, FileSpreadsheet, FileText } from "lucide-react";
+import { exportToExcel, exportToPDF } from "@/lib/utils/exportUtils";
 import Image from "next/image";
 import { CldUploadWidget } from "next-cloudinary";
 import { toast } from "sonner";
@@ -23,6 +24,48 @@ export default function ProductsPage() {
         variants: [{ weight: "", price: "", stock: "10" }],
         isActive: true,
     });
+
+    const handleExportExcel = () => {
+        const data = products.flatMap(prod => {
+            if (prod.variants && prod.variants.length > 0) {
+                return prod.variants.map((v: any) => ({
+                    "Product Name": prod.name,
+                    "Slug": prod.slug,
+                    "Category": prod.category?.name || "Uncategorized",
+                    "Weight/Size": v.weight,
+                    "Price": v.price,
+                    "Stock": v.stock,
+                    "Status": prod.isActive ? "Active" : "Inactive"
+                }));
+            }
+            return [{
+                "Product Name": prod.name,
+                "Slug": prod.slug,
+                "Category": prod.category?.name || "Uncategorized",
+                "Weight/Size": prod.unitQuantity || "N/A",
+                "Price": prod.price || 0,
+                "Stock": prod.stock || 0,
+                "Status": prod.isActive ? "Active" : "Inactive"
+            }];
+        });
+        exportToExcel(data, `Products_Export_${new Date().toISOString().split('T')[0]}`, "Products");
+    };
+
+    const handleExportPDF = () => {
+        const headers = ["Product", "Category", "Base Price", "Stock", "Status"];
+        const data = products.map(prod => [
+            prod.name,
+            prod.category?.name || "N/A",
+            prod.variants && prod.variants.length > 0
+                ? `Starts at ₹${Math.min(...prod.variants.map((v: any) => v.price))}`
+                : `₹${prod.price || 0}`,
+            prod.variants && prod.variants.length > 0
+                ? prod.variants.reduce((acc: number, v: any) => acc + (v.stock || 0), 0)
+                : prod.stock || 0,
+            prod.isActive ? "Active" : "Inactive"
+        ]);
+        exportToPDF(headers, data, `Products_Export_${new Date().toISOString().split('T')[0]}`, "Bee Kiss - Product Inventory Report");
+    };
 
     const fetchData = async () => {
         try {
@@ -132,18 +175,34 @@ export default function ProductsPage() {
                     <h1 className="text-3xl font-serif font-bold text-[#0F2E1D]">Products</h1>
                     <p className="text-gray-500 mt-1 font-sans">Manage inventory, pricing, and details</p>
                 </div>
-                <button
-                    onClick={() => {
-                        setEditingId(null);
-                        setNewProduct({
-                            name: "", slug: "", description: "", category: "", images: [], variants: [{ weight: "", price: "", stock: "10" }], isActive: true
-                        });
-                        setIsAddModalOpen(true);
-                    }}
-                    className="flex items-center gap-2 bg-[#0F2E1D] hover:bg-[#D4A017] text-white hover:text-[#0F2E1D] px-5 py-2.5 rounded-xl font-medium transition-all duration-300 shadow-md">
-                    <Plus className="w-5 h-5" />
-                    New Product
-                </button>
+                <div className="flex gap-2">
+                    <button 
+                        onClick={handleExportExcel}
+                        className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-xl font-medium hover:bg-green-700 transition-all text-sm shadow-md"
+                    >
+                        <FileSpreadsheet className="w-4 h-4" />
+                        Excel
+                    </button>
+                    <button 
+                        onClick={handleExportPDF}
+                        className="flex items-center gap-2 bg-red-600 text-white px-4 py-2 rounded-xl font-medium hover:bg-red-700 transition-all text-sm shadow-md"
+                    >
+                        <FileText className="w-4 h-4" />
+                        PDF
+                    </button>
+                    <button
+                        onClick={() => {
+                            setEditingId(null);
+                            setNewProduct({
+                                name: "", slug: "", description: "", category: "", images: [], variants: [{ weight: "", price: "", stock: "10" }], isActive: true
+                            });
+                            setIsAddModalOpen(true);
+                        }}
+                        className="flex items-center gap-2 bg-[#0F2E1D] hover:bg-[#D4A017] text-white hover:text-[#0F2E1D] px-5 py-2.5 rounded-xl font-medium transition-all duration-300 shadow-md">
+                        <Plus className="w-5 h-5" />
+                        New Product
+                    </button>
+                </div>
             </div>
 
             {/* Modal */}

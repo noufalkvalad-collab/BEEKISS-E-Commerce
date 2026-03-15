@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Search, Filter, Eye, MoreVertical, CheckCircle, Clock, Truck, Package, Loader2 } from "lucide-react";
+import { Search, Filter, Eye, MoreVertical, CheckCircle, Clock, Truck, Package, Loader2, Download, FileSpreadsheet, FileText } from "lucide-react";
+import { exportToExcel, exportToPDF } from "@/lib/utils/exportUtils";
 
 export default function AdminOrdersPage() {
     const [orders, setOrders] = useState<any[]>([]);
@@ -13,6 +14,32 @@ export default function AdminOrdersPage() {
     useEffect(() => {
         fetchOrders();
     }, []);
+
+    const handleExportExcel = () => {
+        const data = filteredOrders.map(order => ({
+            "Order ID": `ORD-${order._id.slice(-6)}`.toUpperCase(),
+            "Customer": order.address?.name || "Guest User",
+            "Email": order.userEmail,
+            "Date": new Date(order.createdAt).toLocaleDateString('en-IN'),
+            "Items": order.items?.reduce((acc: number, item: any) => acc + item.quantity, 0) || 0,
+            "Status": order.status,
+            "Total Amount": `₹${order.totalAmount || 0}`,
+            "Payment Method": order.paymentMethod
+        }));
+        exportToExcel(data, `Orders_Export_${new Date().toISOString().split('T')[0]}`, "Orders");
+    };
+
+    const handleExportPDF = () => {
+        const headers = ["ID", "Customer", "Date", "Status", "Total"];
+        const data = filteredOrders.map(order => [
+            `ORD-${order._id.slice(-6)}`.toUpperCase(),
+            order.address?.name || "Guest",
+            new Date(order.createdAt).toLocaleDateString('en-IN'),
+            order.status,
+            `Rs. ${order.totalAmount || 0}`
+        ]);
+        exportToPDF(headers, data, `Orders_Export_${new Date().toISOString().split('T')[0]}`, "Bee Kiss - Orders Report");
+    };
 
     const fetchOrders = async () => {
         setIsLoading(true);
@@ -55,9 +82,22 @@ export default function AdminOrdersPage() {
                     <h1 className="text-3xl font-serif font-bold text-forest-green">Orders Management</h1>
                     <p className="text-gray-500 mt-1">View and manage all customer orders</p>
                 </div>
-                <button className="bg-forest-green text-white px-4 py-2 rounded font-medium hover:bg-forest-green/90 transition-colors">
-                    Export CSV
-                </button>
+                <div className="flex gap-2">
+                    <button 
+                        onClick={handleExportExcel}
+                        className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded font-medium hover:bg-green-700 transition-colors text-sm shadow-sm"
+                    >
+                        <FileSpreadsheet className="w-4 h-4" />
+                        Excel
+                    </button>
+                    <button 
+                        onClick={handleExportPDF}
+                        className="flex items-center gap-2 bg-red-600 text-white px-4 py-2 rounded font-medium hover:bg-red-700 transition-colors text-sm shadow-sm"
+                    >
+                        <FileText className="w-4 h-4" />
+                        PDF
+                    </button>
+                </div>
             </div>
 
             {/* Filters and Search */}

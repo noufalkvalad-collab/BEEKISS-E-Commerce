@@ -57,7 +57,8 @@ export default function MapAddressSelector({ onAddressSelect }: MapAddressSelect
 
     const extractAddressComponents = (place: google.maps.places.PlaceResult | any) => {
         let houseName = "";
-        let district = "";
+        let districtName = "";
+        let localityName = "";
         let state = "";
         let pincode = "";
         let landmark = "";
@@ -76,11 +77,19 @@ export default function MapAddressSelector({ onAddressSelect }: MapAddressSelect
                     state = component.long_name;
                 }
 
-                // District / City
+                // District Priority (administrative_area_level_2 is usually the District in India)
                 if (types.includes("administrative_area_level_2")) {
-                    district = component.long_name;
-                } else if (!district && (types.includes("administrative_area_level_3") || types.includes("locality"))) {
-                    district = component.long_name;
+                    districtName = component.long_name;
+                }
+
+                // Locality Priority (City/Town)
+                if (types.includes("locality")) {
+                    localityName = component.long_name;
+                }
+
+                // If district is not found yet, check level 3 or sublocality for landmark
+                if (!districtName && types.includes("administrative_area_level_3")) {
+                    districtName = component.long_name;
                 }
 
                 // House Name / Street / Route
@@ -95,11 +104,15 @@ export default function MapAddressSelector({ onAddressSelect }: MapAddressSelect
             }
         }
 
+        // Final Assignment: Prioritize District Name, fallback to Locality Name
+        const finalDistrict = districtName || localityName || "";
+
         // Final fallback for District if still empty
-        if (!district && place.formatted_address) {
+        let fallbackDistrict = finalDistrict;
+        if (!fallbackDistrict && place.formatted_address) {
             const parts = place.formatted_address.split(",");
             if (parts.length >= 3) {
-                district = parts[parts.length - 3].trim();
+                fallbackDistrict = parts[parts.length - 3].trim();
             }
         }
 
@@ -108,13 +121,18 @@ export default function MapAddressSelector({ onAddressSelect }: MapAddressSelect
             houseName = place.name;
         }
 
-        setCurrentAddress(place.formatted_address || `${houseName}, ${district}`);
+        setCurrentAddress(place.formatted_address || `${houseName}, ${fallbackDistrict}`);
         
-        console.log("Extracted Map Data:", { houseName, district, state, pincode, landmark });
+        console.log("Detailed Map Data:", { 
+            foundDistrict: districtName, 
+            foundLocality: localityName, 
+            usedDistrict: fallbackDistrict,
+            fullPlace: place 
+        });
         
         onAddressSelect({ 
             houseName: houseName || "", 
-            district: district || "", 
+            district: fallbackDistrict || "", 
             state: state || "", 
             pincode: pincode || "", 
             landmark: landmark || "" 

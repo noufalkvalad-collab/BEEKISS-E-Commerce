@@ -2,9 +2,10 @@
 
 import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { ArrowLeft, Loader2 } from "lucide-react";
+import { ArrowLeft, Loader2, MapPin } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
+import MapAddressSelector from "@/components/MapAddressSelector";
 
 function AddAddressForm() {
     const router = useRouter();
@@ -12,6 +13,7 @@ function AddAddressForm() {
     const callbackUrl = searchParams.get("callbackUrl") || "/checkout";
 
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [showMap, setShowMap] = useState(false);
     const [address, setAddress] = useState({
         name: "",
         houseName: "",
@@ -21,6 +23,19 @@ function AddAddressForm() {
         state: "",
         landmark: ""
     });
+
+    const handleMapSelect = (data: any) => {
+        console.log("Receiving Map Data in Form:", data);
+        setAddress(prev => ({
+            ...prev,
+            houseName: data.houseName !== "" ? data.houseName : prev.houseName,
+            district: data.district !== "" ? data.district : prev.district,
+            state: data.state !== "" ? data.state : prev.state,
+            pincode: data.pincode !== "" ? data.pincode : prev.pincode,
+            landmark: data.landmark !== "" ? data.landmark : prev.landmark
+        }));
+        toast.success("Location details updated! Check the fields below.");
+    };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -54,7 +69,23 @@ function AddAddressForm() {
                 </Link>
 
                 <div className="bg-white p-8 md:p-10 rounded-3xl shadow-xl border border-[#0F2E1D]/5">
-                    <h1 className="text-3xl font-serif font-bold text-[#0F2E1D] mb-8">Add New Delivery Address</h1>
+                    <div className="flex justify-between items-center mb-8">
+                        <h1 className="text-3xl font-serif font-bold text-[#0F2E1D]">Add New Delivery Address</h1>
+                        <button 
+                            type="button"
+                            onClick={() => setShowMap(!showMap)}
+                            className="flex items-center gap-2 text-sm font-bold text-[#D4A017] hover:bg-[#D4A017]/10 px-3 py-1.5 rounded-lg transition-colors border border-transparent hover:border-[#D4A017]/20"
+                        >
+                            <MapPin className="w-4 h-4" />
+                            {showMap ? "Hide Map" : "Select from Map"}
+                        </button>
+                    </div>
+
+                    {showMap && (
+                        <div className="mb-8 animate-in fade-in slide-in-from-top-4 duration-300">
+                            <MapAddressSelector onAddressSelect={handleMapSelect} />
+                        </div>
+                    )}
 
                     <form onSubmit={handleSubmit} className="space-y-6">
                         <div>

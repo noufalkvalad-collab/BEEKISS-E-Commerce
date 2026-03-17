@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useState } from "react";
+import { Suspense, useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowLeft, Loader2, MapPin } from "lucide-react";
 import Link from "next/link";
@@ -14,6 +14,9 @@ function AddAddressForm() {
 
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [showMap, setShowMap] = useState(false);
+    const editId = searchParams.get("edit");
+    const isEditing = !!editId;
+
     const [address, setAddress] = useState({
         name: "",
         houseName: "",
@@ -23,6 +26,35 @@ function AddAddressForm() {
         state: "",
         landmark: ""
     });
+
+    // Fetch address data if in edit mode
+    useEffect(() => {
+        if (isEditing) {
+            const fetchAddress = async () => {
+                try {
+                    const res = await fetch("/api/user/addresses");
+                    const data = await res.json();
+                    if (data.success) {
+                        const addrToEdit = data.addresses.find((a: any) => a._id === editId);
+                        if (addrToEdit) {
+                            setAddress({
+                                name: addrToEdit.name,
+                                houseName: addrToEdit.houseName,
+                                phone: addrToEdit.phone,
+                                pincode: addrToEdit.pincode,
+                                district: addrToEdit.district,
+                                state: addrToEdit.state,
+                                landmark: addrToEdit.landmark || ""
+                            });
+                        }
+                    }
+                } catch (error) {
+                    toast.error("Failed to load address for editing");
+                }
+            };
+            fetchAddress();
+        }
+    }, [isEditing, editId]);
 
     const handleMapSelect = (data: any) => {
         console.log("Receiving Map Data in Form:", data);
@@ -42,16 +74,20 @@ function AddAddressForm() {
         setIsSubmitting(true);
 
         try {
-            const res = await fetch("/api/user/addresses", {
-                method: "POST",
+            const endpoint = "/api/user/addresses";
+            const method = isEditing ? "PUT" : "POST";
+            const body = isEditing ? { ...address, addressId: editId } : address;
+
+            const res = await fetch(endpoint, {
+                method: method,
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(address)
+                body: JSON.stringify(body)
             });
 
             const data = await res.json();
-            if (!res.ok) throw new Error(data.error || "Failed to add address");
+            if (!res.ok) throw new Error(data.error || `Failed to ${isEditing ? 'update' : 'add'} address`);
 
-            toast.success("Address added successfully!");
+            toast.success(`Address ${isEditing ? 'updated' : 'added'} successfully!`);
             router.push(callbackUrl);
         } catch (error: any) {
             toast.error(error.message);
@@ -70,14 +106,14 @@ function AddAddressForm() {
 
                 <div className="bg-white p-8 md:p-10 rounded-3xl shadow-xl border border-[#0F2E1D]/5">
                     <div className="flex justify-between items-center mb-8">
-                        <h1 className="text-3xl font-serif font-bold text-[#0F2E1D]">Add New Delivery Address</h1>
+                        <h1 className="text-3xl font-serif font-bold text-[#0F2E1D]">{isEditing ? "Edit Delivery Address" : "Add New Delivery Address"}</h1>
                         <button 
                             type="button"
                             onClick={() => setShowMap(!showMap)}
                             className="flex items-center gap-2 text-sm font-bold text-[#D4A017] hover:bg-[#D4A017]/10 px-3 py-1.5 rounded-lg transition-colors border border-transparent hover:border-[#D4A017]/20"
                         >
                             <MapPin className="w-4 h-4" />
-                            {showMap ? "Hide Map" : "Select from Map"}
+                            {showMap ? "Hide Map" : (isEditing ? "Adjust on Map" : "Select from Map")}
                         </button>
                     </div>
 
@@ -197,10 +233,10 @@ function AddAddressForm() {
                                 {isSubmitting ? (
                                     <>
                                         <Loader2 className="w-5 h-5 animate-spin" />
-                                        Saving...
+                                        {isEditing ? "Updating..." : "Saving..."}
                                     </>
                                 ) : (
-                                    "Save Delivery Address"
+                                    isEditing ? "Update Delivery Address" : "Save Delivery Address"
                                 )}
                             </button>
                         </div>

@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Loader2, ArrowLeft, CheckCircle2 } from "lucide-react";
+import { toast } from "sonner";
 
 export default function CheckoutPage() {
     const { data: session, status } = useSession();
@@ -208,6 +209,53 @@ export default function CheckoutPage() {
                                             <div className="flex-1">
                                                 <div className="flex justify-between items-start">
                                                     <p className="font-bold text-[#0F2E1D] text-lg">{addr.name}</p>
+                                                    <div className="flex gap-2">
+                                                        <Link 
+                                                            href={`/user/addresses/new?edit=${addr._id}&callbackUrl=/checkout`}
+                                                            className="p-1.5 hover:bg-[#D4A017]/20 rounded-lg text-[#D4A017] transition-colors"
+                                                            onClick={(e) => e.stopPropagation()}
+                                                            title="Edit Address"
+                                                        >
+                                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
+                                                        </Link>
+                                                        <button 
+                                                            type="button"
+                                                            className="p-1.5 hover:bg-red-50 rounded-lg text-red-500 transition-colors"
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                toast("Delete this address?", {
+                                                                    description: "This action cannot be undone.",
+                                                                    action: {
+                                                                        label: "Delete",
+                                                                        onClick: async () => {
+                                                                            try {
+                                                                                const res = await fetch(`/api/user/addresses?addressId=${addr._id}`, {
+                                                                                    method: 'DELETE'
+                                                                                });
+                                                                                const data = await res.json();
+                                                                                if (data.success) {
+                                                                                    setSavedAddresses(data.addresses);
+                                                                                    if (selectedAddressIndex === index) {
+                                                                                        setSelectedAddressIndex(data.addresses.length > 0 ? 0 : null);
+                                                                                    }
+                                                                                    toast.success("Address deleted");
+                                                                                }
+                                                                            } catch (err) {
+                                                                                toast.error("Failed to delete address");
+                                                                            }
+                                                                        },
+                                                                    },
+                                                                    cancel: {
+                                                                        label: "Cancel",
+                                                                        onClick: () => {},
+                                                                    },
+                                                                });
+                                                            }}
+                                                            title="Delete Address"
+                                                        >
+                                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
+                                                        </button>
+                                                    </div>
                                                 </div>
                                                 <p className="text-sm text-gray-600 mt-2 font-sans leading-relaxed">
                                                     {addr.houseName}, {addr.landmark ? `${addr.landmark}, ` : ''} <br />

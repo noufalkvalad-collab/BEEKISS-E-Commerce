@@ -26,7 +26,7 @@ export async function POST(request: Request) {
       return `\n${p.name}\n${p.description || ''}\nVariants:\n${variants}`;
     }).join('\n');
 
-    const apiKey = process.env.BEEKISS_GEMINI_API_KEY || process.env.GEMINI_API_KEY;
+    const apiKey = process.env.BEEKISS_GEMINI_API_KEY;
 
     // Fallback if the user hasn't added the API Key yet
     if (!apiKey) {
@@ -107,7 +107,7 @@ If the customer asks about delivery details, their order status, tracking, or si
 Otherwise, if it's a normal question about products, honey, or general chat, just reply with a simple text string. DO NOT use JSON if there is no action needed.`;
 
     const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
+      model: 'gemini-3.1-pro-preview',
       contents: message,
       config: {
         systemInstruction: systemPrompt,

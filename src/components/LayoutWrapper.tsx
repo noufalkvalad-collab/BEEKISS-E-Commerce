@@ -14,9 +14,9 @@ export default function LayoutWrapper({ children }: { children: React.ReactNode 
         <>
             {!isAdminRoute && <GlobalOfferBanner />}
             {!isAdminRoute && <Header />}
-            <main className="flex-1 w-full flex flex-col">
+            <div className="flex-1 w-full flex flex-col">
                 {children}
-            </main>
+            </div>
             {!isAdminRoute && <Footer />}
             {!isAdminRoute && <ChatBot />}
         </>

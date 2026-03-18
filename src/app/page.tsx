@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ArrowRight, Leaf, ShieldCheck, Droplets } from "lucide-react";
 import dbConnect from "@/lib/db/mongodb";
 import Product from "@/lib/models/Product";
+import Review from "@/lib/models/Review";
 import ProductCardActions from "@/components/ProductCardActions";
 import { applyActiveOffers } from "@/lib/utils/offerHelper";
 import { Metadata } from "next";
@@ -58,6 +59,18 @@ export default async function Home() {
       offer: p.offer || null,
     };
   });
+
+  // Fetch up to 3 top-rated reviews
+  const dbReviews = await Review.find({ rating: 5 }).sort({ createdAt: -1 }).limit(3).lean() as any[];
+  
+  // Fallback if no reviews exist
+  const displayReviews = dbReviews.length > 0 ? dbReviews : [
+    {
+      userName: "Eleanor Vance",
+      rating: 5,
+      comment: "Absolutely exquisite. The Wildflower Reserve has a complexity I’ve never experienced in commercial honey. It truly tastes like a blossoming forest in spring. Bee Kiss is now a staple on my breakfast table.",
+    }
+  ];
 
   return (
     <main className="flex min-h-screen flex-col bg-[#FDFDF9] overflow-x-hidden">
@@ -234,30 +247,35 @@ export default async function Home() {
             Words from Honored Guests
           </h2>
 
-          <div className="relative bg-white p-10 md:p-16 rounded-3xl shadow-[0_10px_40px_-15px_rgba(0,0,0,0.1)] border border-[#D4A017]/10">
-            {/* Quotation Mark Icon */}
-            <div className="absolute -top-6 left-1/2 -translate-x-1/2 w-14 h-14 bg-[#D4A017] text-[#0F2E1D] rounded-full flex items-center justify-center shadow-lg">
-              <span className="text-5xl font-serif mt-5 leading-none">"</span>
-            </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-10 mt-16 px-4 md:px-0">
+            {displayReviews.map((review, index) => (
+              <div key={index} className="relative bg-white p-8 md:p-10 rounded-3xl shadow-[0_10px_40px_-15px_rgba(0,0,0,0.1)] border border-[#D4A017]/10 flex flex-col h-full mt-6 transition-transform hover:-translate-y-2 duration-300">
+                {/* Quotation Mark Icon */}
+                <div className="absolute -top-6 left-1/2 -translate-x-1/2 w-14 h-14 bg-[#D4A017] text-[#0F2E1D] rounded-full flex items-center justify-center shadow-lg">
+                  <span className="text-5xl font-serif mt-5 leading-none">"</span>
+                </div>
 
-            <p className="text-xl md:text-2xl text-gray-700 italic font-light leading-relaxed mb-10 font-serif">
-              Absolutely exquisite. The Wildflower Reserve has a complexity I’ve never experienced in commercial honey. It truly tastes like a blossoming forest in spring. Bee Kiss is now a staple on my breakfast table.
-            </p>
+                <p className="text-lg text-gray-700 italic font-light leading-relaxed mb-8 font-serif flex-1 relative z-10">
+                  {review.comment}
+                </p>
 
-            <div className="flex items-center justify-center gap-5 border-t border-gray-100 pt-8 w-64 mx-auto">
-              <div className="w-14 h-14 rounded-full overflow-hidden bg-gray-100 shadow-inner relative flex-shrink-0">
-                <Image
-                  src="/beekiss.jpeg"
-                  alt="Avatar"
-                  fill
-                  className="object-cover"
-                />
+                <div className="flex items-center justify-start gap-4 border-t border-gray-100 pt-6 mt-auto">
+                  <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-100 flex items-center justify-center flex-shrink-0 text-[#0F2E1D] font-bold font-serif text-xl border border-[#D4A017]/30 shadow-inner">
+                    {review.userName.charAt(0).toUpperCase()}
+                  </div>
+                  <div className="text-left flex-1 overflow-hidden">
+                    <h4 className="font-bold text-[#0F2E1D] font-serif text-base truncate">{review.userName}</h4>
+                    <div className="flex text-[#D4A017] mt-1 space-x-0.5">
+                      {Array.from({ length: 5 }).map((_, i) => (
+                        <svg key={i} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill={i < review.rating ? "currentColor" : "none"} stroke="currentColor" className="w-3.5 h-3.5">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+                        </svg>
+                      ))}
+                    </div>
+                  </div>
+                </div>
               </div>
-              <div className="text-left flex-1 whitespace-nowrap">
-                <h4 className="font-bold text-[#0F2E1D] font-serif text-lg">Eleanor Vance</h4>
-                <p className="text-xs text-[#D4A017] uppercase tracking-wider font-semibold">Culinary Enthusiast</p>
-              </div>
-            </div>
+            ))}
           </div>
         </div>
       </section>
